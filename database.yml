@@ -1,0 +1,18 @@
+development:
+  dialect: "mysql"
+  database: "mtbcal_development"
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "root"
+
+test:
+  dialect: "mysql"
+  database: "mtbcal_test"
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "root"
+
+production:
+  url: {{envOr "DATABASE_URL" "mysql://root:root@127.0.0.1:3306/mtbcal_production"}}
