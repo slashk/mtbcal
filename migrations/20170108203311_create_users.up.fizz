@@ -1,0 +1,11 @@
+create_table("users", func(t) {
+  t.Column("login", "string", {"unique": true})
+  t.Column("email", "string", {})
+  t.Column("hometown", "string", {})
+  t.Column("avatar", "string", {})
+  t.Column("active", "boolean", {"default": true})
+  t.Column("public_profile", "boolean", {"default": false})
+  t.Column("twitter", "string", {"size": 50})
+  t.Column("facebook", "string", {"size": 50})
+  t.Column("admin", "boolean", {"default": false})
+})
