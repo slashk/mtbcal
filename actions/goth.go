@@ -24,6 +24,7 @@ func init() {
 	app.GET("/{provider}/callback", AuthCallback)
 }
 
+// AuthCallback provides provider callback handler
 func AuthCallback(c buffalo.Context) error {
 	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
 	if err != nil {
