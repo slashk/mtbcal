@@ -24,8 +24,9 @@ func (v *UsersResource) List(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("User query error"))
 	}
+	c.Set("users", u)
 	// TODO render a real user list page
-	return c.Render(200, r.String(u.String()))
+	return c.Render(200, r.HTML("users/index.html"))
 }
 
 // Show default implementation.
@@ -42,8 +43,8 @@ func (v *UsersResource) Show(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("User id not found"))
 	}
-	// TODO render a real user list page
-	return c.Render(200, r.String(u.String()))
+	c.Set("user", u)
+	return c.Render(200, r.HTML("users/show.html"))
 }
 
 // New creates an empty user for creation
@@ -67,6 +68,20 @@ func (v *UsersResource) Create(c buffalo.Context) error {
 
 // Edit default implementation.
 func (v *UsersResource) Edit(c buffalo.Context) error {
+	// TODO admin middleware
+	var u models.User
+	k, err := c.ParamInt("user_id")
+	if err != nil {
+		// if no ID (int) found, lookup by login name (unique)
+		k := c.Param("user_id")
+		err = models.DB.Scope(models.ByLogin(k)).First(&u)
+	} else {
+		err = models.DB.Find(&u, k)
+	}
+	if err != nil {
+		return c.Render(500, r.String("User id not found"))
+	}
+	// TODO show form passing u into it
 	return c.Render(200, r.String("Users#Edit"))
 }
 
@@ -77,6 +92,7 @@ func (v *UsersResource) Update(c buffalo.Context) error {
 
 // Destroy user
 func (v *UsersResource) Destroy(c buffalo.Context) error {
+	// TODO admin middleware
 	k, err := c.ParamInt("user_id")
 	if err != nil {
 		return c.Render(404, r.String("user cannot be found"))

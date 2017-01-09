@@ -1,0 +1,10 @@
+<h1><a href="/"> <i class="fa fa-home" aria-hidden="true"></i></a>  All Users</h1>
+
+<table width="90%" class="table table-striped">
+<thead><tr><th>Name </th><th> Hometown </th><th> Twitter </th><th> Facebook </th></tr></thead>
+<tbody>
+{{#each users as |u|}}
+  <tr><td><a href="/users/{{u.ID}}">{{u.Login}}</a></td><td> {{u.Hometown}} </td><td> @{{u.Twitter}} </td><td> {{u.Facebook}} </td></tr>
+{{/each}}
+</tbody>
+</table>
