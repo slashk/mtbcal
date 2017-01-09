@@ -1,5 +1,7 @@
 # mtbcal
 
+[![Build Status](https://travis-ci.org/slashk/mtbcal.svg?branch=master)](https://travis-ci.org/slashk/mtbcal)
+
 ## Documentation
 
 To view generated docs for mtbcal, run the below command and point your brower to http://127.0.0.1:6060/pkg/
