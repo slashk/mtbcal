@@ -79,7 +79,7 @@ func (v *UsersResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(422, r.String("new user not validated"))
 	}
-	return c.Redirect(301, "/users/%d", &u.ID)
+	return c.Redirect(301, "/users/%d", u.ID)
 }
 
 // Edit default implementation.
