@@ -7,8 +7,13 @@
   <tr>
     <td><a href="/users/{{u.ID}}">{{u.Login}}</a></td><td> {{u.Hometown}} </td><td> @{{u.Twitter}} </td><td> {{u.Facebook}} </td><td>
       <a href="/users/{{u.ID}}/edit"> <i class="fa fa-pencil" aria-hidden="true"></i></a>
+      <a href="/users/{{u.ID}}" data-method="DELETE" rel="nofollow" data-confirm="Are you sure?"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
     </td>
 </tr>
 {{/each}}
 </tbody>
 </table>
+
+<div align="right">
+  <a class="btn btn-primary" href="/users/new" role="button">New User</a>
+</div>

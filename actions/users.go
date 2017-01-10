@@ -82,7 +82,6 @@ func (v *UsersResource) Edit(c buffalo.Context) error {
 	c.Set("user", u)
 	// TODO show form passing u into it
 	return c.Render(200, r.HTML("users/edit.html"))
-	// return c.Render(200, r.String("Users#Edit"))
 }
 
 // Update default implementation.
@@ -103,7 +102,6 @@ func (v *UsersResource) Update(c buffalo.Context) error {
 	if err != nil {
 		// return errors.WithStack(err)
 	}
-	// return c.Render(200, r.String("Users#Update"))
 	return c.Redirect(301, "/users/%d", u.ID)
 }
 
@@ -118,5 +116,5 @@ func (v *UsersResource) Destroy(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("user cannot be deleted from DB"))
 	}
-	return c.Render(200, r.String("Users#Destroy"))
+	return c.Redirect(301, "/users")
 }
