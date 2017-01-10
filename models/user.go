@@ -7,6 +7,7 @@ import (
 
 	"github.com/markbates/pop"
 	"github.com/markbates/validate"
+	"github.com/markbates/validate/validators"
 )
 
 // User represents mtbcalendar site user
@@ -42,19 +43,23 @@ func (u Users) String() string {
 
 // Validate gets run everytime you call a "pop.Validate" method.
 // This method is not required and may be deleted.
-func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
-	return validate.NewErrors(), nil
+func (u *User) Validate() (*validate.Errors, error) {
+	verrs := validate.Validate(
+		&validators.StringIsPresent{Name: "Login", Field: u.Login},
+		&validators.StringIsPresent{Name: "Email", Field: u.Email},
+	)
+	return verrs, nil
 }
 
 // ValidateSave gets run everytime you call "pop.ValidateSave" method.
 // This method is not required and may be deleted.
-func (u *User) ValidateSave(tx *pop.Connection) (*validate.Errors, error) {
+func (u *User) ValidateSave() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
 // ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
 // This method is not required and may be deleted.
-func (u *User) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
+func (u *User) ValidateUpdate() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 

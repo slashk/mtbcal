@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/gobuffalo/buffalo"
+	"github.com/pkg/errors"
 	"github.com/slashk/mtbcal/models"
 )
 
@@ -63,11 +64,20 @@ func (v *UsersResource) Create(c buffalo.Context) error {
 	var u models.User
 	err := c.Bind(&u)
 	if err != nil {
-		return c.Render(500, r.String("bad user data rejected"))
+		return c.Render(422, r.String("new user not validated"))
+	}
+	verrs, err := u.Validate()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if verrs.HasAny() {
+		c.Set("verrs", verrs.Errors)
+		c.Set("user", u)
+		return c.Render(422, r.HTML("users/new.html"))
 	}
 	err = models.DB.Create(&u)
 	if err != nil {
-		return c.Render(500, r.String("user cannot be saved to DB"))
+		return c.Render(422, r.String("new user not validated"))
 	}
 	return c.Redirect(301, "/users/%d", &u.ID)
 }
@@ -94,13 +104,22 @@ func (v *UsersResource) Update(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("bad user data rejected"))
 	}
+	verrs, err := u.Validate()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if verrs.HasAny() {
+		c.Set("verrs", verrs.Errors)
+		c.Set("user", u)
+		return c.Render(422, r.HTML("users/new.html"))
+	}
 	err = models.DB.Update(&u)
 	if err != nil {
-		// return errors.WithStack(err)
+		return c.Render(422, r.String("new user not validated"))
 	}
 	err = models.DB.Reload(&u)
 	if err != nil {
-		// return errors.WithStack(err)
+		return c.Render(500, r.String("cannot reload user object"))
 	}
 	return c.Redirect(301, "/users/%d", u.ID)
 }
