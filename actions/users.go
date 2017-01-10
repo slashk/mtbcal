@@ -77,7 +77,7 @@ func (v *UsersResource) Create(c buffalo.Context) error {
 	}
 	err = models.DB.Create(&u)
 	if err != nil {
-		return c.Render(422, r.String("new user not validated"))
+		return c.Render(422, r.String("new user cannot be saved to DB"))
 	}
 	return c.Redirect(301, "/users/%d", u.ID)
 }
@@ -90,7 +90,6 @@ func (v *UsersResource) Edit(c buffalo.Context) error {
 		return c.Render(500, r.String("User id not found"))
 	}
 	c.Set("user", u)
-	// TODO show form passing u into it
 	return c.Render(200, r.HTML("users/edit.html"))
 }
 
@@ -115,7 +114,7 @@ func (v *UsersResource) Update(c buffalo.Context) error {
 	}
 	err = models.DB.Update(&u)
 	if err != nil {
-		return c.Render(422, r.String("new user not validated"))
+		return c.Render(422, r.String("new user cannot be updated in DB"))
 	}
 	err = models.DB.Reload(&u)
 	if err != nil {
