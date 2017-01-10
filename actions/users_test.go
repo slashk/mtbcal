@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestMain is the setup/teardown
+// func TestMain(m *testing.M) {
+//
+//     ret := m.Run()
+//     models.TestDBManager.Exit()
+//     os.Exit(ret)
+// }
+
 func dummyUser() *models.User {
 	return &models.User{
 		Login:   "Mark",
