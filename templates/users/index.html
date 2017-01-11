@@ -1,0 +1,19 @@
+<h1><a href="/"> <i class="fa fa-home" aria-hidden="true"></i></a>  All Users</h1>
+
+<table width="90%" class="table table-striped">
+<thead><tr><th>Name </th><th>ID</th><th> Hometown </th><th> Twitter </th><th> Facebook </th><th></th></tr></thead>
+<tbody>
+{{#each users as |u|}}
+  <tr>
+    <td><a href="/users/{{u.ID}}">{{u.Login}}</a></td><td>{{u.ID}}</td><td> {{u.Hometown}} </td><td> @{{u.Twitter}} </td><td> {{u.Facebook}} </td><td>
+      <a href="/users/{{u.ID}}/edit"> <i class="fa fa-pencil" aria-hidden="true"></i></a>
+      <a href="/users/{{u.ID}}" data-method="DELETE" rel="nofollow" data-confirm="Are you sure?"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+    </td>
+</tr>
+{{/each}}
+</tbody>
+</table>
+
+<div align="right">
+  <a class="btn btn-primary" href="/users/new" role="button">New User</a>
+</div>
