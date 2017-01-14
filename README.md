@@ -1,6 +1,7 @@
 # mtbcal
 
 [![Build Status](https://travis-ci.org/slashk/mtbcal.svg?branch=master)](https://travis-ci.org/slashk/mtbcal)
+[![Code Climate](https://codeclimate.com/github/slashk/mtbcal/badges/gpa.svg)](https://codeclimate.com/github/slashk/mtbcal)
 
 ## Documentation
 
