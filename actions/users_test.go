@@ -1,6 +1,7 @@
 package actions_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/markbates/willie"
@@ -10,12 +11,12 @@ import (
 )
 
 // TestMain is the setup/teardown
-// func TestMain(m *testing.M) {
-//
-//     ret := m.Run()
-//     models.TestDBManager.Exit()
-//     os.Exit(ret)
-// }
+func TestMain(m *testing.M) {
+	models.DB.MigrateUp("../migrations")
+	ret := m.Run()
+	models.DB.MigrateDown("../migrations")
+	os.Exit(ret)
+}
 
 func dummyUser() *models.User {
 	return &models.User{
