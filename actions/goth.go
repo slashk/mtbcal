@@ -10,6 +10,7 @@ import (
 	"github.com/markbates/goth/providers/facebook"
 	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/twitter"
+	"github.com/slashk/mtbcal/models"
 )
 
 func init() {
@@ -17,7 +18,6 @@ func init() {
 
 	goth.UseProviders(
 		twitter.New(os.Getenv("TWITTER_KEY"), os.Getenv("TWITTER_SECRET"), fmt.Sprintf("%s%s", App().Host, "/auth/twitter/callback")),
-		// twitter.NewAuthenticate(os.Getenv("TWITTER_KEY"), os.Getenv("TWITTER_SECRET"), fmt.Sprintf("%s%s", App().Host, "/auth/twitter/callback")),
 		facebook.New(os.Getenv("FACEBOOK_KEY"), os.Getenv("FACEBOOK_SECRET"), fmt.Sprintf("%s%s", App().Host, "/auth/facebook/callback")),
 		github.New(os.Getenv("GITHUB_KEY"), os.Getenv("GITHUB_SECRET"), fmt.Sprintf("%s%s", App().Host, "/auth/github/callback")),
 	)
@@ -33,8 +33,31 @@ func AuthCallback(c buffalo.Context) error {
 	if err != nil {
 		return c.Error(401, err)
 	}
-	// Do something with the user, maybe register them/sign them in
-	// TODO register in DB ?
-	c.Set("user", user)
+
+	// register
+	u := models.User{
+		Login:         user.Name,
+		Hometown:      user.Location,
+		Avatar:        user.AvatarURL,
+		Email:         user.Email,
+		Provider:      user.Provider,
+		ProviderID:    user.UserID,
+		Active:        true,
+		Admin:         false,
+		PublicProfile: false,
+	}
+	// TODO register in DB only if not registered ?
+	err = models.DB.Save(&u)
+	if err != nil {
+		return c.Error(500, err)
+	}
+	c.Set("user", u)
+
+	c.Session().Set("AccessToken", user.AccessToken)
+	c.Session().Set("AccessTokenSecret", user.AccessTokenSecret)
+	c.Session().Set("RefreshToken", user.RefreshToken)
+	c.Session().Save()
+
 	return c.Render(200, r.HTML("users/show.html"))
+	// return c.Render(200, r.String(u.Name))
 }

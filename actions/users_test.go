@@ -1,7 +1,6 @@
 package actions_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/markbates/willie"
@@ -11,19 +10,21 @@ import (
 )
 
 // TestMain is the setup/teardown
-func TestMain(m *testing.M) {
-	models.DB.MigrateUp("../migrations")
-	ret := m.Run()
-	models.DB.MigrateDown("../migrations")
-	os.Exit(ret)
-}
+// func TestMain(m *testing.M) {
+// 	models.DB.MigrateUp("../migrations")
+// 	ret := m.Run()
+// 	models.DB.MigrateDown("../migrations")
+// 	os.Exit(ret)
+// }
 
 func dummyUser() *models.User {
 	return &models.User{
-		Login:   "Mark",
-		Email:   "mark@example.com",
-		Twitter: "markb",
-		Active:  true,
+		Login:      "Mark",
+		Email:      "mark@example.com",
+		Provider:   "twitter",
+		ProviderID: "9494393",
+		Avatar:     "http://image.example.com/test",
+		Active:     true,
 	}
 }
 
