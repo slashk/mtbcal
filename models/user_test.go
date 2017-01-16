@@ -10,9 +10,10 @@ import (
 func TestUserString(t *testing.T) {
 	r := require.New(t)
 	u := models.User{
-		Login:   "Mark",
-		Email:   "mark@example.com",
-		Twitter: "markb",
+		Login:      "Mark",
+		Email:      "mark@example.com",
+		Provider:   "twitter",
+		ProviderID: "xxxx",
 	}
 	r.Contains(u.String(), "mark@example.com")
 }
@@ -20,14 +21,16 @@ func TestUserString(t *testing.T) {
 func TestUsersString(t *testing.T) {
 	r := require.New(t)
 	u1 := models.User{
-		Login:   "Mark",
-		Email:   "mark@example.com",
-		Twitter: "markb",
+		Login:      "Mark",
+		Email:      "mark@example.com",
+		Provider:   "twitter",
+		ProviderID: "xxxx",
 	}
 	u2 := models.User{
-		Login:   "Ken",
-		Email:   "ken@example.com",
-		Twitter: "kenp",
+		Login:      "Ken",
+		Email:      "ken@example.com",
+		Provider:   "twitter",
+		ProviderID: "xxxx",
 	}
 	users := models.Users{u1, u2}
 	r.Contains(users.String(), "mark@example.com")
@@ -37,9 +40,10 @@ func TestUsersString(t *testing.T) {
 func TestUserValidateWValidUser(t *testing.T) {
 	r := require.New(t)
 	u := models.User{
-		Login:   "Mark",
-		Email:   "mark@example.com",
-		Twitter: "markb",
+		Login:      "Mark",
+		Email:      "mark@example.com",
+		Provider:   "twitter",
+		ProviderID: "xxxx",
 	}
 	verrs, err := u.Validate()
 	r.NoError(err)
@@ -51,9 +55,10 @@ func TestUserValidateWValidUser(t *testing.T) {
 func TestUserValidateWNoLogin(t *testing.T) {
 	r := require.New(t)
 	u := models.User{
-		Login:   "",
-		Email:   "mark@example.com",
-		Twitter: "markb",
+		Login:      "",
+		Email:      "mark@example.com",
+		Provider:   "twitter",
+		ProviderID: "xxxx",
 	}
 	verrs, err := u.Validate()
 	r.NoError(err)

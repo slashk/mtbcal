@@ -21,8 +21,8 @@ type User struct {
 	Avatar        string    `json:"avatar" db:"avatar"`
 	Active        bool      `json:"active" db:"active"`
 	PublicProfile bool      `json:"public_profile" db:"public_profile"`
-	Twitter       string    `json:"twitter" db:"twitter"`
-	Facebook      string    `json:"facebook" db:"facebook"`
+	Provider      string    `json:"provider" db:"provider"`
+	ProviderID    string    `json:"provider_id" db:"provider_id"`
 	Admin         bool      `json:"admin" db:"admin"`
 }
 
