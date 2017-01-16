@@ -2,3 +2,7 @@ language: go
 
 go:
   - 1.7.x
+
+install: go get -t -u -v ./...
+
+script: buffalo test
