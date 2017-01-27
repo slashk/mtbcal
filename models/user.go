@@ -69,3 +69,10 @@ func ByLogin(l string) pop.ScopeFunc {
 		return q.Where("login = ?", l)
 	}
 }
+
+// ByOauth scopes a query to find by provider and providerID
+func ByOauth(p, i string) pop.ScopeFunc {
+	return func(q *pop.Query) *pop.Query {
+		return q.Where("provider = ?", p).Where("provider_id = ?", i)
+	}
+}

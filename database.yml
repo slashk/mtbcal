@@ -6,7 +6,7 @@ development:
   password: "postgres"
 
 test:
-  dialect: "mysql"
+  dialect: "postgres"
   database: "mtbcal_test"
   host: "127.0.0.1"
   user: "postgres"
