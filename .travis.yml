@@ -3,11 +3,11 @@ env:
 - GO_ENV=test
 
 before_script:
-  - psql -c 'create database {{name}}_test;' -U postgres
+  - psql -c 'create database mtbcal_test;' -U postgres
   - mkdir -p $TRAVIS_BUILD_DIR/public/assets
 
 go:
   - 1.7.x
   - master
 
-go_import_path: {{ packagePath }}
+go_import_path: github.com/slashk/mtbcal
