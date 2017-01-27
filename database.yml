@@ -1,18 +1,21 @@
 development:
-  dialect: "mysql"
+  dialect: "postgres"
   database: "mtbcal_development"
   host: "127.0.0.1"
-  port: "3306"
-  user: "root"
-  password: "root"
+  user: "postgres"
+  password: "postgres"
 
 test:
   dialect: "mysql"
   database: "mtbcal_test"
   host: "127.0.0.1"
-  port: "3306"
-  user: "root"
-  password: "root"
+  user: "postgres"
+  password: "postgres"
 
 production:
-  url: {{envOr "DATABASE_URL" "mysql://root:root@127.0.0.1:3306/mtbcal_production"}}
+  dialect: postgres
+  database: mtbcal_production
+  user: mtbcal
+  password: {{ env "POSTGRES_PASSWORD" }}
+  host: 127.0.0.1
+  pool: 25
