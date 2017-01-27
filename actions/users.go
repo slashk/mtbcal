@@ -15,6 +15,16 @@ func init() {
 	var resource buffalo.Resource
 	resource = &UsersResource{&buffalo.BaseResource{}}
 	App().Resource("/users", resource)
+	App().GET("/login", LoginHandler)
+	// app.POST("/login", AuthHandler)
+	// app.Use(authMiddleware())
+	// app.Middleware.Skip(authMiddleware(), AuthHandler, LoginHandler)
+	// app.Middleware.Use(authMiddleware(), )
+}
+
+// LoginHandler renders the login form for /login
+func LoginHandler(c buffalo.Context) error {
+	return c.Render(200, r.HTML("login.html"))
 }
 
 func findUserFromParam(c buffalo.Context) (models.User, error) {
@@ -27,6 +37,12 @@ func findUserFromParam(c buffalo.Context) (models.User, error) {
 	} else {
 		err = models.DB.Find(&u, k)
 	}
+	return u, err
+}
+
+func findUserFromOauth(p, i string) (models.User, error) {
+	var u models.User
+	err := models.DB.Scope(models.ByOauth(p, i)).First(&u)
 	return u, err
 }
 
