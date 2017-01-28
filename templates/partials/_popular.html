@@ -4,7 +4,7 @@
   </div>
   <div class="panel-body">
     {{#each popular as |e|}}
-      {{ e.StartDate.Format "01-02-2006" }}: <a href="/events/{{e.ID}}">{{ e.Name }}</a> ({{ e.State }})<br />
+      {{ formatDate e.StartDate "common" }}: <a href="/events/{{e.ID}}">{{ e.Name }}</a> ({{ e.State }})<br />
     {{/each}}
   </div>
 </div>

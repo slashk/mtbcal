@@ -4,7 +4,7 @@
   </div>
   <div class="panel-body">
     {{#each upcoming as |u|}}
-      {{ u.StartDate }}: <a href="/events/{{u.ID}}">{{ u.Name }}</a> ({{ u.State }})<br />
+      {{ formatDate u.StartDate "common" }}: <a href="/events/{{u.ID}}">{{ u.Name }}</a> ({{ u.State }})<br />
     {{/each}}
   </div>
 </div>
