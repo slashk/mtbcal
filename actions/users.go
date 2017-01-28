@@ -24,6 +24,7 @@ func init() {
 
 // LoginHandler renders the login form for /login
 func LoginHandler(c buffalo.Context) error {
+	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("login.html"))
 }
 
@@ -55,6 +56,7 @@ func (v *UsersResource) List(c buffalo.Context) error {
 		return c.Render(500, r.String("User query error"))
 	}
 	c.Set("users", u)
+	c.Set("page", pageDefault)
 	// TODO render a real user list page
 	return c.Render(200, r.HTML("users/index.html"))
 }
@@ -66,12 +68,14 @@ func (v *UsersResource) Show(c buffalo.Context) error {
 		return c.Render(500, r.String("User id not found"))
 	}
 	c.Set("user", u)
+	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("users/show.html"))
 }
 
 // New creates an empty user for creation
 func (v *UsersResource) New(c buffalo.Context) error {
 	c.Set("user", models.User{})
+	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("users/new.html"))
 }
 
@@ -95,6 +99,7 @@ func (v *UsersResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(422, r.String("new user cannot be saved to DB"))
 	}
+	c.Set("page", pageDefault)
 	return c.Redirect(301, "/users/%d", u.ID)
 }
 
@@ -106,6 +111,7 @@ func (v *UsersResource) Edit(c buffalo.Context) error {
 		return c.Render(500, r.String("User id not found"))
 	}
 	c.Set("user", u)
+	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("users/edit.html"))
 }
 
@@ -136,6 +142,7 @@ func (v *UsersResource) Update(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("cannot reload user object"))
 	}
+	c.Set("page", pageDefault)
 	return c.Redirect(301, "/users/%d", u.ID)
 }
 
@@ -150,5 +157,6 @@ func (v *UsersResource) Destroy(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(500, r.String("user cannot be deleted from DB"))
 	}
+	c.Set("page", pageDefault)
 	return c.Redirect(301, "/users")
 }
