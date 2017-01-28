@@ -1,0 +1,24 @@
+{{define "export-calendar"}}
+<div id="export-calendar">
+  <div style="text-align:left;">
+    <p>
+      Choose one of the links below to export this event
+      into your personal calendar. Clicking any of these links will
+      open up a new browser window (or your Outlook program)
+      so that you can edit of the details of the event.
+    </p>
+    <p style="margin-left: 30px;">
+      <a href="http://www.google.com/calendar/event?action=TEMPLATE&amp;text={{.e.Name}}&amp;details=http://www.mtbcalendar.com/events/{{.e.ID}}&amp;location={{.e.Location}}&amp;dates={{.e.StartDate.Format "2016-07-31"}}/{{.e.EndDate.Format "2016-07-31"}}&amp;sprop=website:http://www.mtbcalendar.com/events/{{.e.ID}}&amp;sprop=name:MTBcalendar.com&amp;trp=false" target="_blank"><i class="fa fa-google" aria-hidden="true"></i> Add to your Google Calendar</a><br />
+      <a href="http://visitmix.com/labs/oomph/1.0/Server/icalendar.ashx?summary={{.e.Name}}&amp;description=http://www.mtbcalendar.com/events/{{.e.ID}}&amp;location={{.e.Location}}&amp;dtstart={{.e.StartDate.Format "20161231"}}&amp;dtend={{.e.EndDate.Format "2016-12-31"}}"><i class="fa fa-windows" aria-hidden="true"></i> Add to your Outlook Calendar</a><br />
+      <a href="http://calendar.yahoo.com/?v=60&amp;type=0&amp;title={{.e.Name}}&amp;desc=http://www.mtbcalendar.com/events/{{.e.ID}}&amp;URL=http://www.mtbcalendar.com/events/{{.e.ID}}&amp;in_loc={{.e.Location}}&amp;st={{.e.StartDate.Format "2016-07-31"}}" target="_blank"><i class="fa fa-yahoo" aria-hidden="true"></i> Add to your Yahoo! Calendar</a><br />
+    </p>
+    <p>
+      To dismiss this dialog box, click anywhere outside
+      this box or the small "x" in the upper righthand corner.
+    </p>
+    <p>
+      If you have any questions about this feature,<a href="/contact">contact us for help</a>.
+    </p>
+  </div>
+</div>
+{{end}}

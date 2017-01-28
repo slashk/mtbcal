@@ -1,0 +1,16 @@
+<!-- Dupe -->
+<div id="dupe-form">
+<p style="text-align:left;margin-bottom:1em;">
+If this event has already been entered into the events database,
+enter the primary events ID into the field below and click 'Mark as Duplicate'
+</p>
+<p>
+<form action="/events/duplicate/3792" method="post"><div style="margin:0;padding:0;display:inline"><input name="_method" type="hidden" value="put" /></div>
+<label for="event_twin">Twin ID</label>:     <input id="event_twin" name="event[twin]" size="30" type="text" /><br />
+<input id="event_user_id" name="event[user_id]" type="hidden" value="1024" />
+<input name="commit" type="submit" value="Mark as Duplicate" />
+<!-- cancel tag ? -->
+</form>
+</p>
+</div>
+<!-- End Dupe -->
