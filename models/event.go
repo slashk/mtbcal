@@ -26,8 +26,8 @@ type Event struct {
 	StartDate    time.Time `db:"start_date"            json:"start_date"`
 	EndDate      time.Time `db:"end_date"              json:"end_date"`
 	WebReg       bool      `db:"web_reg"               json:"web_reg"`
-	RegOpenDate  string    `db:"reg_open_date"         json:"reg_open_date"`
-	RegCloseDate string    `db:"reg_close_date"        json:"reg_close_date"`
+	RegOpenDate  time.Time `db:"reg_open_date"         json:"reg_open_date"`
+	RegCloseDate time.Time `db:"reg_close_date"        json:"reg_close_date"`
 	UserID       string    `db:"user_id"               json:"user_id"`
 	Region       string    `db:"region"                json:"region"`
 	RegionID     int       `db:"region_id"             json:"region_id"`

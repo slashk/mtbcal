@@ -21,4 +21,5 @@ create_table("events", func(t) {
 	t.Column("dupe"          , "boolean", {"default": false})
 	t.Column("twin"          , "string", {"default": false})
 	t.Column("country"       , "string", {})
+	t.Column("published_at", "timestamp", {})
 })
