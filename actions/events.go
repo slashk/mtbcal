@@ -16,6 +16,12 @@ func init() {
 	App().Resource("/events", resource)
 }
 
+func findEventFromUUID(c buffalo.Context) (models.Event, error) {
+	var u models.Event
+	err := models.DB.Find(&u, c.Param("event_id"))
+	return u, err
+}
+
 // List default implementation.
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
@@ -39,7 +45,13 @@ func (v *EventsResource) List(c buffalo.Context) error {
 
 // Show default implementation.
 func (v *EventsResource) Show(c buffalo.Context) error {
-	return c.Render(200, r.String("Events#Show"))
+	e, err := findEventFromUUID(c)
+	if err != nil {
+		return c.Render(500, r.String("Event id not found"))
+	}
+	c.Set("e", e)
+	c.Set("page", pageDefault)
+	return c.Render(200, r.HTML("events/show.html"))
 }
 
 // New default implementation.
@@ -49,12 +61,21 @@ func (v *EventsResource) New(c buffalo.Context) error {
 
 // Create default implementation.
 func (v *EventsResource) Create(c buffalo.Context) error {
+	e := models.Event{}
+	c.Set("e", e)
+	c.Set("page", pageDefault)
 	return c.Render(200, r.String("Events#Create"))
 }
 
 // Edit default implementation.
 func (v *EventsResource) Edit(c buffalo.Context) error {
-	return c.Render(200, r.String("Events#Edit"))
+	e, err := findEventFromUUID(c)
+	if err != nil {
+		return c.Render(500, r.String("Event id not found"))
+	}
+	c.Set("e", e)
+	c.Set("page", pageDefault)
+	return c.Render(200, r.HTML("events/edit.html"))
 }
 
 // Update default implementation.

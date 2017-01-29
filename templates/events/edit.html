@@ -1,0 +1,45 @@
+<h1>Add New Event</h1>
+<div id='event-style-guide'>
+  <p>To keep the calendar neat and tidy, please take a moment to read our style
+    guide <img alt="help" height="16" id="help-icon-style-guidelines" src="/images/help.png?1318201045" title="Click to read style guidelines" width="16" />
+  </p>
+</div>
+
+<form action="/events/{{e.ID}}" method="POST" accept-charset="utf-8" class="form-horizontal">
+  <input type="hidden" name="_method" id="_method" value="PUT" />
+  {{ partial "events/form.html" }}
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-default" href="/events/{{e.ID}}" role="button">Cancel</a>
+    </div>
+  </div>
+</form>
+
+<div id="style-guidelines" style="text-align: left;">
+This calendar is for public MTB races events anywhere in the world. We list any event (for free!) providing that you follow these guidelines:
+    <ul>
+      <li><strong>Please search for your event before entering it</strong>. The calendar has many events in it and we would like to keep duplicates to a minimum.</li>
+      <li>Enter only public events. If you don’t want other people to come, it’s probably best to keep them in your diary, not on the interwebs.</li>
+      <li>We need locations for all events and we use Google to geolocate (i.e. find the location on the globe). Google doesn’t know everything (yet), so sometimes you might have to try and a few names for your location before Google gets it right. When in doubt, try using a less particular name (say Placerville, CA instead of Salmon Trail, Placerville, CA) and add more details in the event’s descriptions.</li>
+      <li>If you have an event series (like a local Wednesday night race), please enter each individual race as a separate event, then tagged with the series name like "US MTB Cup". This allows users to add specific events to their personal calendars.</li>
+      <li>If you want to change an event, either add a comment (see the bottom event’s page) or contact the site admins via the contact page.</li>
+      <li>You can edit <strong>your</strong> events after you enter them by clicking on the pencil icon next to the event name once you are logged in.</li>
+      <li>Please try and keep the language clean.</li>
+      <li>The site admins reserve the right to edit or delete duplicate or inappropriate events from the calendar.</li>
+    </ul>
+</div>
+
+<div id="location-guidelines" style="text-align:left">Enter a location so that we can add it to the map. We use a variety of geocoder (computer programs that plot location names to gps coordinates) to compute the location. Sometimes these programs cannot resolve your name with their databases. When that happens, you will see a red square around your location. You can either enter a new location or leave it to us to correct.
+</div>
+
+<div id="tags-guidelines" style="text-align:left">
+Choose a few meaningful and <b>specific</b> tags (separated by commas) to help collect your event with other similar events. <strong>Good tags</strong> include tags like the series name ("AMBC", "SERC", etc.). Poor tags include the obvious (i.e. biking, mtb, xc). Remember that the event will automatically be tagged with it's region, country and event types.
+</div>
+
+<div id="format-guidelines" style="text-align:left">Choose the type (or format) of race that will be held at this event. Most MTB events will be cross-country or downhill, but we list a large number of formats to cover almost every kind of race offered. If your race format doesn't fit into any of these categories, choose "other."
+</div>
+
+<div id="license-guidelines" style="text-align:left">
+To gain insurance, worldwide/nation/regional accreditation or , some events require a racing license from a governing body. In the United States, USA Cycling tends to be most popular. For top pros, a UCI license is necessary. Some regional races, such as many in Oregon, have an OBRA (Oregon Bike Racing Association) license.
+</div>
