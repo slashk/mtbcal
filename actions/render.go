@@ -2,6 +2,7 @@ package actions
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -21,7 +22,8 @@ func init() {
 			}
 		},
 		Helpers: map[string]interface{}{
-			"formatDate": formatDate,
+			"formatDate":   formatDate,
+			"formatLatLng": formatLatLng,
 		},
 	})
 }
@@ -65,6 +67,15 @@ func formatDate(t time.Time, f string) string {
 		return t.Format("2006-01-02T15:04:05-05:00")
 	case "common":
 		return t.Format("Jan 2 2006")
+	case "year":
+		return t.Format("2006")
+	case "datepicker":
+		return t.Format("2006-01-02")
 	}
-	return ""
+	return t.Format("Jan 2 2006")
+}
+
+// formatLatLng returns a formatted string to 3 decimals from a float32
+func formatLatLng(f float32) string {
+	return strconv.FormatFloat(float64(f), 'f', 3, 64)
 }
