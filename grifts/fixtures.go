@@ -26,7 +26,7 @@ var _ = Add("fixtures", func(c *Context) error {
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "admin",
 		Country:      "US",
-		Lng:          95.2353,
+		Lng:          -95.2353,
 		Lat:          38.9717,
 	}
 	two := models.Event{
@@ -44,7 +44,7 @@ var _ = Add("fixtures", func(c *Context) error {
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "boss",
 		Country:      "US",
-		Lng:          95.2353,
+		Lng:          -95.2353,
 		Lat:          38.9717,
 	}
 	longone := models.Event{
@@ -73,7 +73,7 @@ An extensive event expo with sponsors stands, food, drinks, entertainment and ac
 		URL:     "http://www.mtbcalendar.com",
 		UserID:  "boss",
 		Country: "US",
-		Lng:     95.2353,
+		Lng:     -95.2353,
 		Lat:     38.9717,
 	}
 	events := models.Events{}
@@ -89,7 +89,7 @@ An extensive event expo with sponsors stands, food, drinks, entertainment and ac
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Date"})
 	for _, e := range events {
-		table.Append([]string{e.Name, e.StartDate.Format("1 Feb 2016")})
+		table.Append([]string{e.Name, e.StartDate.Format("2 Jan 2006")})
 	}
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
