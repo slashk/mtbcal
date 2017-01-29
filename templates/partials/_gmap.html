@@ -1,11 +1,12 @@
 <!-- Google map -->
-<div id="full_map_div_id" style="width:335px;height:200px" ></div>
+<div id="event_map" style="height: 250px;"></div>
 <script>
   function initMap() {
-    var uluru = {lat: {{.e.Lat}}, lng: {{.e.Lng}}};
-    var map = new google.maps.Map(document.getElementById('full_map_div_id'), {
-      zoom: 6,
-      center: uluru
+    var uluru = {lat:{{formatLatLng e.Lat}}, lng:{{formatLatLng e.Lng}} };
+    var map = new google.maps.Map(document.getElementById('event_map'), {
+      zoom: 12,
+      center: uluru,
+      mapTypeId: 'terrain'
     });
     var marker = new google.maps.Marker({
       position: uluru,

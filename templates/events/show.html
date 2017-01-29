@@ -22,7 +22,9 @@
   {{markdown e.Description}}
 </div>
 <div class="row">
-  <small>This event entered by {{e.UserID}} on {{formatDate e.CreatedAt "common"}}</small>
+  <p class="text-muted text-right">
+    <small>This event entered by {{e.UserID}} on {{formatDate e.CreatedAt "common"}}</small>
+  </p>
 </div>
 
 <!-- TODO add each for races -->
