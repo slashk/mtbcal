@@ -44,8 +44,8 @@ var _ = Add("fixtures", func(c *Context) error {
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "boss",
 		Country:      "US",
-		Lng:          -95.2353,
-		Lat:          38.9717,
+		Lng:          -105.2705,
+		Lat:          40.0150,
 	}
 	longone := models.Event{
 		Name:         "The Otway Odyssey and Great Otway Gravel Grind (GOGG)",
@@ -73,8 +73,8 @@ An extensive event expo with sponsors stands, food, drinks, entertainment and ac
 		URL:     "http://www.mtbcalendar.com",
 		UserID:  "boss",
 		Country: "US",
-		Lng:     -95.2353,
-		Lat:     38.9717,
+		Lng:     143.7167,
+		Lat:     -38.5167,
 	}
 	events := models.Events{}
 	events = append(events, one)
