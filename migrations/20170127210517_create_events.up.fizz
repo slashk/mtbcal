@@ -2,7 +2,7 @@ create_table("events", func(t) {
 	t.Column("id", "uuid", {"primary": true})
 	t.Column("legacy_id", "integer", {})
 	t.Column("name", "string", {})
-	t.Column("description", "string", {})
+	t.Column("description", "text", {})
 	t.Column("location"      , "string", {})
 	t.Column("url"           , "string", {})
 	t.Column("start_date"    , "timestamp", {})
