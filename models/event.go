@@ -63,19 +63,19 @@ func (e Events) String() string {
 
 // Validate gets run everytime you call a "pop.Validate" method.
 // This method is not required and may be deleted.
-func (e *Event) Validate(tx *pop.Connection) (*validate.Errors, error) {
+func (e *Event) Validate() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
 // ValidateSave gets run everytime you call "pop.ValidateSave" method.
 // This method is not required and may be deleted.
-func (e *Event) ValidateSave(tx *pop.Connection) (*validate.Errors, error) {
+func (e *Event) ValidateSave() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
 // ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
 // This method is not required and may be deleted.
-func (e *Event) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
+func (e *Event) ValidateUpdate() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
