@@ -63,7 +63,7 @@ func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.Event{}
 	c.Set("e", e)
 	c.Set("page", pageDefault)
-	return c.Render(200, r.String("events/new.html"))
+	return c.Render(200, r.HTML("events/new.html"))
 }
 
 // Create default implementation.
