@@ -6,8 +6,9 @@
 <div class="row">
   <div class="col-md-4">
     <p><i class="fa fa-calendar fa-lg" aria-hidden="true"></i> {{formatDate e.StartDate "common"}} – {{formatDate e.EndDate "common"}}</p>
-    <p><i class="fa fa-home fa-lg" aria-hidden="true"></i> {{e.Location}}
-      [<a href="http://maps.google.com/maps?f=q&amp;hl=en&amp;geocode=&amp;ttype=&amp;q=Les%20Gets%2C%20France" target="_blank">large map</a>]
+    <p><i class="fa fa-map fa-lg" aria-hidden="true"></i> {{e.Location}}
+      <a href="http://maps.google.com/maps?f=q&amp;hl=en&amp;geocode=&amp;ttype=&amp;q={{e.Location}}" target="_blank"><i class="fa fa-location-arrow" aria-hidden="true"></i>
+</a>
     </p>
     <p><i class="fa fa-globe fa-lg" aria-hidden="true"></i> <a href="{{e.URL}}" class="url" target="_blank">{{e.URL}}</a></p>
     <p><i class="fa fa-tags fa-lg" aria-hidden="true"></i></p>
