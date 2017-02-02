@@ -3,8 +3,9 @@ env:
 - GO_ENV=test
 
 before_script:
-  - psql -c 'create database mtbcal_test;' -U postgres
+  - buffalo db create -e test
   - mkdir -p $TRAVIS_BUILD_DIR/public/assets
+  - buffalo db migrate up -e test
 
 go:
   - 1.7.x
