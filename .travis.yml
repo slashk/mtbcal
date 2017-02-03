@@ -1,11 +1,15 @@
 language: go
 env:
 - GO_ENV=test
+- PATH=$PATH:$GOPATH/bin
 
 before_script:
-  - buffalo db create -e test
+  - go install -u github.com/gobuffalo/buffalo/buffalo
+  - buffalo db create -a
+  # - psql -c 'create database mtbcal_test;' -U postgres
   - mkdir -p $TRAVIS_BUILD_DIR/public/assets
-  - buffalo db migrate up -e test
+  - buffalo db migrate up
+  - buffalo test
 
 go:
   - 1.7.x
