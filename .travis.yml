@@ -1,7 +1,6 @@
 language: go
 env:
 - GO_ENV=test
-- PATH=$PATH:$GOPATH/bin
 
 before_script:
   - go install github.com/gobuffalo/buffalo/buffalo
