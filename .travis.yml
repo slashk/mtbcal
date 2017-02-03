@@ -4,7 +4,7 @@ env:
 - PATH=$PATH:$GOPATH/bin
 
 before_script:
-  - go install -u github.com/gobuffalo/buffalo/buffalo
+  - go install github.com/gobuffalo/buffalo/buffalo
   - buffalo db create -a
   # - psql -c 'create database mtbcal_test;' -U postgres
   - mkdir -p $TRAVIS_BUILD_DIR/public/assets
