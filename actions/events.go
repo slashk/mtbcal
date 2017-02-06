@@ -60,7 +60,7 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 
 // New default implementation.
 func (v *EventsResource) New(c buffalo.Context) error {
-	e := models.Event{}
+	e := models.NewEmptyEvent()
 	c.Set("e", e)
 	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/new.html"))
@@ -69,10 +69,20 @@ func (v *EventsResource) New(c buffalo.Context) error {
 // Create default implementation.
 func (v *EventsResource) Create(c buffalo.Context) error {
 	e := models.Event{}
-	err := c.Bind(&e)
+	// Alternate to bind due to time.Time parsing
+	// the usual would be to do `err = c.Bind(&e)`
+	err := c.Request().ParseForm()
 	if err != nil {
-		return c.Render(422, r.String("new event not validated"))
+		return errors.WithStack(err)
 	}
+	dec := schema.NewDecoder()
+	dec.IgnoreUnknownKeys(true)
+	dec.ZeroEmpty(true)
+	// this is the money call that gets us a time parser
+	dec.RegisterConverter(time.Time{}, ConvertFormDate)
+	// this is the equivalent to Bind(&e)
+	err = dec.Decode(&e, c.Request().PostForm)
+	// end alternate Bind
 	verrs, err := e.Validate()
 	if err != nil {
 		return errors.WithStack(err)
@@ -86,9 +96,14 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(422, r.String("new event cannot be saved to DB"))
 	}
+	err = models.DB.Reload(&e)
+	if err != nil {
+		return c.Render(500, r.String("cannot reload event object"))
+	}
 	c.Set("e", e)
 	c.Set("page", pageDefault)
-	return c.Redirect(301, "/events/%d", e.ID)
+	c.LogField("new event id", e.ID)
+	return c.Redirect(301, "/events/%s", e.ID.String())
 }
 
 // Edit returns a editing page with the event record filled in
@@ -157,9 +172,14 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(404, r.String("event cannot be found"))
 	}
-	err = models.DB.Destroy(&models.Event{ID: e.ID})
+	e.Active = false
+	// don't actually delete in the DB, just mark inactive
+	// err = models.DB.Destroy(&models.Event{ID: e.ID})
+	err = models.DB.Update(&e)
 	if err != nil {
-		return c.Render(500, r.String("event cannot be deleted from DB"))
+		// TODO add flash
+		// return c.Render(422, r.HTML("events/edit.html"))
+		return c.Render(422, r.String("event cannot be updated in DB"))
 	}
 	c.Set("page", pageDefault)
 	return c.Redirect(301, "/events")

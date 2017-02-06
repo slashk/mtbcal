@@ -28,6 +28,7 @@ func dummyEvent() *models.Event {
 		Country:      "US",
 		Lng:          -95.2353,
 		Lat:          38.9717,
+		Dupe:         false,
 	}
 }
 
@@ -51,27 +52,47 @@ func Test_EventsResource_Show(t *testing.T) {
 	r.Contains(res.Body.String(), e.Name)
 }
 
-// func Test_EventsResource_New(t *testing.T) {
-// 	r := require.New(t)
-// 	r.Fail("Not Implemented!")
-// }
-//
+func Test_EventsResource_New(t *testing.T) {
+	r := require.New(t)
+	w := willie.New(actions.App())
+	res := w.Request("/events/new").Get()
+	r.Equal(200, res.Code)
+	r.Contains(res.Body.String(), "Name")
+}
+
 // func Test_EventsResource_Create(t *testing.T) {
 // 	r := require.New(t)
 // 	r.Fail("Not Implemented!")
 // }
 //
-// func Test_EventsResource_Edit(t *testing.T) {
-// 	r := require.New(t)
-// 	r.Fail("Not Implemented!")
-// }
-//
+func Test_EventsResource_Edit(t *testing.T) {
+	r := require.New(t)
+	w := willie.New(actions.App())
+	e := dummyEvent()
+	r.NoError(models.DB.Create(e))
+	res := w.Request("/events/" + e.ID.String() + "/edit").Get()
+	r.Equal(200, res.Code)
+	r.Contains(res.Body.String(), "Name")
+}
+
 // func Test_EventsResource_Update(t *testing.T) {
 // 	r := require.New(t)
 // 	r.Fail("Not Implemented!")
 // }
-//
-// func Test_EventsResource_Destroy(t *testing.T) {
-// 	r := require.New(t)
-// 	r.Fail("Not Implemented!")
-// }
+
+func Test_EventsResource_Destroy(t *testing.T) {
+	var x models.Event
+	r := require.New(t)
+	w := willie.New(actions.App())
+	e := dummyEvent()
+	r.NoError(models.DB.Create(e))
+	res := w.Request("/events/" + e.ID.String()).Delete()
+	r.Equal(301, res.Code)
+	err := models.DB.Find(&x, e.ID)
+	if err != nil {
+		r.Fail("event appears to have been deleted")
+	}
+	if x.Active == true {
+		r.Fail("event was not marked inactive on destroy")
+	}
+}
