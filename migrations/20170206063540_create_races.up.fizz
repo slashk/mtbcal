@@ -1,0 +1,9 @@
+create_table("races", func(t) {
+	t.Column("id", "uuid", {"primary": true})
+	t.Column("Cost       ", "string", {})
+	t.Column("License    ", "string", {})
+	t.Column("Description", "string", {})
+	t.Column("URL        ", "string", {})
+	t.Column("EventID    ", "uuid",   {})
+	t.Column("FormatID   ", "integer",{})
+})
