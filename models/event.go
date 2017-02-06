@@ -62,54 +62,99 @@ func (e Events) String() string {
 }
 
 // Validate gets run everytime you call a "pop.Validate" method.
-// This method is not required and may be deleted.
 func (e *Event) Validate() (*validate.Errors, error) {
+	// var v *validate.Errors
+	// EndDate is after StartDate
+	// RegCloseDate is after RegOpenDate if web_reg is true
+	// RegOpenDate and RegCloseDate are before EndDate
+	// URL should be valid web address
+	err := e.Geocode()
+	if err != nil {
+		// TODO how do we do this ?
+		// v.Add("geocode failure", err.Error())
+	}
 	return validate.NewErrors(), nil
 }
 
 // ValidateSave gets run everytime you call "pop.ValidateSave" method.
-// This method is not required and may be deleted.
 func (e *Event) ValidateSave() (*validate.Errors, error) {
+	var v *validate.Errors
+	// EndDate is after StartDate
+	// RegCloseDate is after RegOpenDate if web_reg is true
+	err := e.Geocode()
+	if err != nil {
+		// TODO how do we do this ?
+		v.Add("geocode failure", err.Error())
+	}
 	return validate.NewErrors(), nil
 }
 
 // ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
-// This method is not required and may be deleted.
 func (e *Event) ValidateUpdate() (*validate.Errors, error) {
+	// var v *validate.Errors
+	// EndDate is after StartDate
+	// RegCloseDate is after RegOpenDate if web_reg is true
+	err := e.Geocode()
+	if err != nil {
+		// v.Add("geocode failure", "Event could not be geocoded")
+	}
 	return validate.NewErrors(), nil
 }
 
-// geocode uses google maps to find the lat, lng of an event location
-func geocode(loc string) (float32, float32, string, string, error) {
+// Geocode method find lat, lng and state for event location strings
+func (e *Event) Geocode() error {
 	var client *maps.Client
 	var err error
 	mapAPI := os.Getenv("GMAP_API")
-	if mapAPI != "" {
-		client, err = maps.NewClient(maps.WithAPIKey(mapAPI))
-	} else {
-		return 0, 0, "", "", errors.New("No geocoding API key")
+	if mapAPI == "" {
+		return errors.New("No GMAP_API variable set for geocoding")
 	}
 	r := &maps.GeocodingRequest{
-		Address: loc,
+		Address: e.Location,
 	}
+	client, err = maps.NewClient(maps.WithAPIKey(mapAPI))
 	resp, err := client.Geocode(context.Background(), r)
 	if err != nil {
-		// log.WithError(err).Debug("geocoding error")
-		return 0.0, 0.0, "", "", err
+		return err
 	}
-	lat := float32(resp[0].Geometry.Location.Lat)
-	lng := float32(resp[0].Geometry.Location.Lng)
-	state := resp[0].AddressComponents[2].ShortName
-	location := resp[0].FormattedAddress
-	// log.WithFields(log.Fields{
-	// 	"response": resp,
-	// 	"state":    state,
-	// 	"lat":      lat,
-	// 	"location": location,
-	// 	"lng":      lng,
-	// }).Debug("geocode result")
-	return lat, lng, state, location, nil
+	e.Lat = float32(resp[0].Geometry.Location.Lat)
+	e.Lng = float32(resp[0].Geometry.Location.Lng)
+	e.State = resp[0].AddressComponents[2].ShortName
+	e.Location = resp[0].FormattedAddress
+	return nil
 }
+
+// geocode uses google maps to find the lat, lng of an event location
+// func geocode(loc string) (float32, float32, string, string, error) {
+// 	var client *maps.Client
+// 	var err error
+// 	mapAPI := os.Getenv("GMAP_API")
+// 	if mapAPI != "" {
+// 		client, err = maps.NewClient(maps.WithAPIKey(mapAPI))
+// 	} else {
+// 		return 0, 0, "", "", errors.New("No geocoding API key")
+// 	}
+// 	r := &maps.GeocodingRequest{
+// 		Address: loc,
+// 	}
+// 	resp, err := client.Geocode(context.Background(), r)
+// 	if err != nil {
+// 		// log.WithError(err).Debug("geocoding error")
+// 		return 0.0, 0.0, "", "", err
+// 	}
+// 	lat := float32(resp[0].Geometry.Location.Lat)
+// 	lng := float32(resp[0].Geometry.Location.Lng)
+// 	state := resp[0].AddressComponents[2].ShortName
+// 	location := resp[0].FormattedAddress
+// 	// log.WithFields(log.Fields{
+// 	// 	"response": resp,
+// 	// 	"state":    state,
+// 	// 	"lat":      lat,
+// 	// 	"location": location,
+// 	// 	"lng":      lng,
+// 	// }).Debug("geocode result")
+// 	return lat, lng, state, location, nil
+// }
 
 // Upcoming finds future events
 func Upcoming() pop.ScopeFunc {
@@ -145,5 +190,20 @@ func Active() pop.ScopeFunc {
 func Unique() pop.ScopeFunc {
 	return func(q *pop.Query) *pop.Query {
 		return q.Where("dupe = ?", false)
+	}
+}
+
+// NewEmptyEvent creates a valid new Event
+func NewEmptyEvent() Event {
+	return Event{
+		StartDate:    time.Now(),
+		EndDate:      time.Now(),
+		RegOpenDate:  time.Now(),
+		RegCloseDate: time.Now(),
+		WebReg:       false,
+		Active:       true,
+		Dupe:         false,
+		Lat:          0.0,
+		Lng:          0.0,
 	}
 }
