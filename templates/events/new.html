@@ -1,0 +1,13 @@
+<h1>New Event</h1>
+
+{{ partial "errors.html" }}
+
+<form action="/events" method="POST" accept-charset="utf-8" class="form-horizontal">
+  {{ partial "events/form.html" }}
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-default" href="/events" role="button">Cancel</a>
+    </div>
+  </div>
+</form>

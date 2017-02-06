@@ -1,0 +1,9 @@
+{{define "admin-buttons"}}
+<span class="event-admin-buttons">
+  <a href="/events/{{.e.ID}}/edit"><button class="tipsy-s" id="edit-event-icon" title="Edit this event" type="button"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></a>
+  <a href="/events/tweet_event/3792"><button class="tipsy-s" id="tweet-button-icon" title="Tweet this event" type="button"><i class="fa fa-twitter" aria-hidden="true"></i></button></a>
+  <a href="/events/replicate/3792"><button class="tipsy-s" id="replicate-event-icon" title="Replicate this event" type="button"><i class="fa fa-clone" aria-hidden="true"></i></button></a>
+  <button class="tipsy-s" id="dupe-button-icon" title="Mark this event as a duplicate of another event" type="button"><i class="fa fa-book" aria-hidden="true"></i></button>
+  <a href="/events/{{.e.ID}}" onclick="if (confirm('Mark inactive ?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href;var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_method'); m.setAttribute('value', 'delete'); f.appendChild(m);f.submit(); };return false;"><button class="tipsy-s" id="cancel-event-icon" title="Cancel this event" type="button"><i class="fa fa-window-close-o" aria-hidden="true"></i></button></a>
+</span>
+{{end}}

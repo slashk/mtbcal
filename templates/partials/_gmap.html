@@ -1,0 +1,20 @@
+<!-- Google map -->
+<div id="event_map" style="height: 250px;"></div>
+<script>
+  function initMap() {
+    var uluru = {lat:{{formatLatLng e.Lat}}, lng:{{formatLatLng e.Lng}} };
+    var map = new google.maps.Map(document.getElementById('event_map'), {
+      zoom: 10,
+      center: uluru,
+      mapTypeId: 'terrain'
+    });
+    var marker = new google.maps.Marker({
+      position: uluru,
+      map: map
+    });
+  }
+</script>
+<!-- TODO replace GMap API key -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDTclOMBCqUjD5BEW6v3klxKOvWooHd1TY&callback=initMap">
+</script>
+<!-- End google map  -->

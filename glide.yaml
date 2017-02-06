@@ -28,6 +28,7 @@ import:
 - package: github.com/olekukonko/tablewriter
 - package: github.com/pkg/errors
   version: ~0.8.0
+- package: github.com/markbates/gentronics
 testImport:
 - package: github.com/markbates/willie
 - package: github.com/stretchr/testify

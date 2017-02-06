@@ -3,8 +3,12 @@ env:
 - GO_ENV=test
 
 before_script:
-  - psql -c 'create database mtbcal_test;' -U postgres
+  - go install github.com/gobuffalo/buffalo/buffalo
+  - buffalo db create -a
+  # - psql -c 'create database mtbcal_test;' -U postgres
   - mkdir -p $TRAVIS_BUILD_DIR/public/assets
+  - buffalo db migrate up
+  - buffalo test
 
 go:
   - 1.7.x

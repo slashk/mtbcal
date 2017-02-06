@@ -1,0 +1,10 @@
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 class="panel-title">Popular Events</h2>
+  </div>
+  <div class="panel-body">
+    {{#each popular as |e|}}
+      {{ formatDate e.StartDate "common" }}: <a href="/events/{{e.ID}}">{{ e.Name }}</a> ({{ e.State }})<br />
+    {{/each}}
+  </div>
+</div>

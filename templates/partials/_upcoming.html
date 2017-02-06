@@ -1,0 +1,10 @@
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h3 class="panel-title">Upcoming Events</h3>
+  </div>
+  <div class="panel-body">
+    {{#each upcoming as |u|}}
+      {{ formatDate u.StartDate "common" }}: <a href="/events/{{u.ID}}">{{ u.Name }}</a> ({{ u.State }})<br />
+    {{/each}}
+  </div>
+</div>

@@ -1,0 +1,19 @@
+{{define "comments"}}
+<h2  class="mtbcal-header ui-state-default ui-priority-secondary ui-corner-all"> Comments </h2>
+<div id="comments">
+  <p><em>No Comments <!-- TODO fix comments --></em></p>
+</div>
+<div id="comment_form">
+  <form action="/events/add_comment" method="post" onsubmit="jQuery.ajax({data:jQuery.param(jQuery(this).serializeArray()), dataType:'script', type:'post', url:'/events/add_comment'}); return false;">
+    <legend>
+      <img alt="Comment_add" height="16" src="/images/comment_add.png?1318201045" width="16" />
+      <strong> Add Comment</strong>
+    </legend><br />
+    <textarea cols="50" id="comment_comment" name="comment[comment]" rows="5"></textarea>
+    <input id="comment_event" name="comment[event]" type="hidden" value="3792" />
+    <input id="comment_user_id" name="comment[user_id]" type="hidden" value="1" />
+    <br />
+    <input name="commit" type="submit" value="Add Comment" />
+  </form>
+</div>
+{{end}}

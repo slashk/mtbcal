@@ -1,0 +1,10 @@
+<div class="panel panel-success">
+  <div class="panel-heading">
+    <h3 class="panel-title">Updated Events</h3>
+  </div>
+  <div class="panel-body">
+    {{#each updated as |u|}}
+      {{ formatDate u.StartDate "common" }}: <a href="/events/{{u.ID}}">{{ u.Name }}</a> ({{ u.State }})<br />
+    {{/each}}
+  </div>
+</div>
