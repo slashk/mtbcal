@@ -7,13 +7,15 @@
   <div class="col-md-4">
     <p><i class="fa fa-calendar fa-lg" aria-hidden="true"></i> {{formatDate e.StartDate "common"}} – {{formatDate e.EndDate "common"}}</p>
     <p><i class="fa fa-map fa-lg" aria-hidden="true"></i> {{e.Location}}
-      <a href="http://maps.google.com/maps?f=q&amp;hl=en&amp;geocode=&amp;ttype=&amp;q={{e.Location}}" target="_blank"><i class="fa fa-location-arrow" aria-hidden="true"></i>
-</a>
+      <a href="http://maps.google.com/maps?f=q&amp;hl=en&amp;geocode=&amp;ttype=&amp;q={{e.Location}}" target="_blank"><i class="fa fa-location-arrow" aria-hidden="true"></i></a>
     </p>
     <p><i class="fa fa-globe fa-lg" aria-hidden="true"></i> <a href="{{e.URL}}" class="url" target="_blank">{{e.URL}}</a></p>
     <p><i class="fa fa-tags fa-lg" aria-hidden="true"></i></p>
     <p><i class="fa fa-trophy fa-lg" aria-hidden="true"></i></p>
     <p><i class="fa fa-calendar-plus-o fa-lg" aria-hidden="true"></i> Add to external calendar</p>
+    {{#if e.WebReg}}
+      <p><i class="fa fa-cart-plus fa-lg" aria-hidden="true"></i> Registration open {{formatDate e.RegOpenDate "common"}} – {{formatDate e.RegCloseDate "common"}}</p>
+    {{/if}}
   </div>
   <div class="col-md-8">
     {{ partial "partials/gmap.html" }}
