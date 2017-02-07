@@ -86,13 +86,37 @@ An extensive event expo with sponsors stands, food, drinks, entertainment and ac
 			log.Panic(err.Error())
 		}
 	}
+	rOne := models.Race{Cost: "$10", FormatID: 1, EventID: events[0].ID, URL: "http://yahoo.com", License: "USA Cycling"}
+	err := models.DB.Create(&rOne)
+	if err != nil {
+		log.Panic(err)
+	}
+	rTwo := models.Race{Cost: "$20", FormatID: 2, EventID: events[1].ID, URL: "http://google.com", License: "ORBA"}
+	err = models.DB.Create(&rTwo)
+	if err != nil {
+		log.Panic(err)
+	}
+	rLongOne := models.Race{Cost: "$30", FormatID: 3, EventID: events[2].ID, URL: "http://cxmagazine.com", License: "None"}
+	err = models.DB.Create(&rLongOne)
+	if err != nil {
+		log.Panic(err)
+	}
+	rLongTwo := models.Race{Cost: "$40", FormatID: 4, EventID: events[2].ID, URL: "http://atom.com", License: "CX"}
+	err = models.DB.Create(&rLongTwo)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Date"})
+	table.SetHeader([]string{"Event Name", "Date", "Races"})
 	for _, e := range events {
-		table.Append([]string{e.Name, e.StartDate.Format("2 Jan 2006")})
+		var r models.Races
+		models.DB.BelongsTo(&e).All(&r)
+		table.Append([]string{e.Name, e.StartDate.Format("2 Jan 2006"), r.FormatString()})
 	}
 	table.SetCenterSeparator("|")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.Render()
+
 	return nil
 })
