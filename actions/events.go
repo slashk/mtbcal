@@ -31,14 +31,17 @@ func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
 	err := models.DB.Scope(models.Popular()).All(&popular)
 	if err != nil {
+		// TODO handle error
 		// c.Render(200, r.String("Shit problems"))
 	}
 	err = models.DB.Scope(models.Upcoming()).All(&upcoming)
 	if err != nil {
+		// TODO handle error
 		// c.Render(200, r.String("Shit problems"))
 	}
 	err = models.DB.Scope(models.Updated()).All(&updated)
 	if err != nil {
+		// TODO handle error
 		// c.Render(200, r.String("Shit problems"))
 	}
 	c.Set("popular", popular)
@@ -51,9 +54,17 @@ func (v *EventsResource) List(c buffalo.Context) error {
 func (v *EventsResource) Show(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		// TODO handle error gracefully
 		return c.Render(500, r.String("Event id not found"))
 	}
+	races, err := models.FindRacesFromEvent(e)
+	if err != nil {
+		// TODO handle error gracefully
+		c.LogField("error", err.Error())
+		return c.Render(500, r.String(err.Error()))
+	}
 	c.Set("e", e)
+	c.Set("races", races)
 	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/show.html"))
 }
@@ -110,6 +121,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 func (v *EventsResource) Edit(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		// TODO handle error
 		return c.Render(500, r.String("Event id not found"))
 	}
 	c.Set("e", e)
@@ -117,10 +129,11 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 
-// Update chnages a existing event record
+// Update changes a existing event record
 func (v *EventsResource) Update(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		// TODO handle error
 		c.LogField("error", err)
 		return c.Render(500, r.String("Event id not found"))
 	}
@@ -128,6 +141,7 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 	// the usual would be to do `err = c.Bind(&e)`
 	err = c.Request().ParseForm()
 	if err != nil {
+		// TODO handle error
 		return errors.WithStack(err)
 	}
 	dec := schema.NewDecoder()

@@ -47,8 +47,10 @@ func Test_EventsResource_Show(t *testing.T) {
 	w := willie.New(actions.App())
 	e := dummyEvent()
 	r.NoError(models.DB.Create(e))
+	models.DB.Reload(e)
+	r.NotEmpty(e.ID, "event id is empty")
 	res := w.Request("/events/" + e.ID.String()).Get()
-	r.Equal(200, res.Code)
+	r.Equal(200, res.Code, res.Body.String())
 	r.Contains(res.Body.String(), e.Name)
 }
 
