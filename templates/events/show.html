@@ -24,27 +24,10 @@
 <div class="row">
   {{markdown e.Description}}
 </div>
+
 <!-- TODO make this #if -->
-<div class="row">
-  <ul class="nav nav-tabs nav-pills">
-    {{#each races as |r|}}
-      <li role="presentation">
-        <a href="#{{r.FormatID}}" aria-controls="profile" role="tab" data-toggle="tab">
-          {{r.FormatID}}</a>
-      </li>
-    {{/each}}
-  </ul>
-  <div class="tab-content">
-    {{#each races as |r|}}
-      <div role="tabpanel" class="tab-pane" id="{{r.FormatID}}">
-        <p>Cost: {{r.Cost}}</p>
-        <p>License: {{r.License}}</p>
-        <p>URL: <a href="{{r.URL}}">{{r.URL}}</a></p>
-        <p>{{r.Description}}</p>
-      </div>
-    {{/each}}
-  </div>
-</div>
+{{partial "partials/race_tab.html"}}
+
 <div class="row">
   <p class="text-muted text-right">
     <small>This event entered by {{e.UserID}} on {{formatDate e.CreatedAt "common"}}</small>

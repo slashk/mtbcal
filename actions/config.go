@@ -7,7 +7,7 @@ type PageDefaults struct {
 	Keywords    string
 }
 
-// D is the default instantiation of PageDefaults
+// pageDefault is the default instantiation of PageDefaults
 var pageDefault = PageDefaults{
 	Title:       "MTBCal",
 	Description: "The best mtb calendar",
