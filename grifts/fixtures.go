@@ -14,7 +14,6 @@ var _ = Add("fixtures", func(c *Context) error {
 	one := models.Event{
 		Name:         "BigBoy",
 		Location:     "Folsom, CA",
-		State:        "CA",
 		WebReg:       true,
 		Active:       true,
 		PublishedAt:  time.Now(),
@@ -26,13 +25,10 @@ var _ = Add("fixtures", func(c *Context) error {
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "admin",
 		Country:      "US",
-		Lng:          -95.2353,
-		Lat:          38.9717,
 	}
 	two := models.Event{
 		Name:         "LittleBoy",
 		Location:     "Boulder, CO",
-		State:        "CO",
 		WebReg:       false,
 		Active:       false,
 		PublishedAt:  time.Now(),
@@ -44,13 +40,10 @@ var _ = Add("fixtures", func(c *Context) error {
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "boss",
 		Country:      "US",
-		Lng:          -105.2705,
-		Lat:          40.0150,
 	}
 	longone := models.Event{
 		Name:         "The Otway Odyssey and Great Otway Gravel Grind (GOGG)",
 		Location:     "Forrest VIC 3236, Australia",
-		State:        "VIC",
 		WebReg:       false,
 		Active:       false,
 		PublishedAt:  time.Now(),
@@ -70,19 +63,21 @@ The Otway Odyssey always attracts the best riders from across Australia who come
 
 The Otway Odyssey MTB Marathons have grown to become the pre-eminent mountain bike races in Australia and on the bucket list for many cyclists. The courses are well known for their tough climbs and technical trails, but also for the friendliness on course and the race atmosphere around the Forrest Football Ground expo area.
 An extensive event expo with sponsors stands, food, drinks, entertainment and activities at the Start / Finish makes this a weekend when all riders come together to celebrate off-road riding and gravel grinding in the best of company. So mark it in your diary, get on your bike and we’ll see you at Forrest over 25th and 26th February, 2017.`,
-		URL:     "http://www.mtbcalendar.com",
-		UserID:  "boss",
-		Country: "US",
-		Lng:     143.7167,
-		Lat:     -38.5167,
+		URL:    "http://www.mtbcalendar.com",
+		UserID: "boss",
 	}
 	events := models.Events{}
 	events = append(events, one)
 	events = append(events, two)
 	events = append(events, longone)
 	for x := range events {
-		err := models.DB.Create(&events[x])
+		vErr, err := events[x].Validate()
 		if err != nil {
+			log.Panicf("%v with %v", vErr, err)
+		}
+		err = models.DB.Create(&events[x])
+		if err != nil {
+			// log.Printf("%v \n", vErrs)
 			log.Panic(err.Error())
 		}
 	}
