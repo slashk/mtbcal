@@ -29,14 +29,18 @@
  <div class="form-group">
  <label for="StartDate" class="col-sm-2 control-label">Start Date</label>
  <div class="col-sm-3">
-   <input type="date" class="form-control" name="StartDate" id="StartDate" value="{{ formatDate e.StartDate "datepicker"}}" />
+   <input type="date" class="form-control" name="StartDate" id="StartDate"
+   data-toggle="tooltip" data-placement="top" title="Date that the event starts"
+   value="{{ formatDate e.StartDate "datepicker"}}" />
  </div>
 </div>
 
  <div class="form-group">
  <label for="EndDate" class="col-sm-2 control-label">End Date</label>
  <div class="col-sm-3">
-   <input type="date" class="form-control" name="EndDate" id="EndDate" value="{{ formatDate e.EndDate "datepicker"}}" />
+   <input type="date" class="form-control" name="EndDate" id="EndDate"
+   data-toggle="tooltip" data-placement="bottom" title="Date that the event ends"
+   value="{{ formatDate e.EndDate "datepicker"}}" />
  </div>
 </div>
 
@@ -46,7 +50,7 @@
   <div class="col-sm-3">
     <div class="checkbox">
       <label>
-        <input type="checkbox" id="WebReg" value="">
+        <input type="checkbox" id="WebReg" name="WebReg" value="on" {{#if e.WebReg}}checked{{/if}}>
         Available
       </label>
     </div>

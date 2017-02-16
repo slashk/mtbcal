@@ -103,6 +103,8 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		c.Set("user", e)
 		return c.Render(422, r.HTML("users/new.html"))
 	}
+	c.LogField("event", e)
+	e.Active = true
 	err = models.DB.Create(&e)
 	if err != nil {
 		return c.Render(422, r.String("new event cannot be saved to DB"))
@@ -152,6 +154,10 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 	// this is the equivalent to Bind(&e)
 	err = dec.Decode(&e, c.Request().PostForm)
 	// end alternate Bind
+	if c.Request().PostForm.Get("WebReg") == "" {
+		e.WebReg = false
+	}
+	c.LogField("event", e)
 	if err != nil {
 		return errors.WithStack(err)
 	}
