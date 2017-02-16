@@ -24,6 +24,10 @@
 <div class="row">
   {{markdown e.Description}}
 </div>
+
+<!-- TODO make this #if -->
+{{partial "partials/race_tab.html"}}
+
 <div class="row">
   <p class="text-muted text-right">
     <small>This event entered by {{e.UserID}} on {{formatDate e.CreatedAt "common"}}</small>
