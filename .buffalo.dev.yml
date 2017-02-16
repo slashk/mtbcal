@@ -6,6 +6,7 @@ ignored_folders:
 - assets
 - public
 - grifts
+- bin
 - tmp
 - node_modules
 - .sass-cache

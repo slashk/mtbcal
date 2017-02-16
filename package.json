@@ -1,7 +1,7 @@
 {
   "name": "mtbcal",
-  "version": "1.0.0",
-  "description": "## Documentation",
+  "version": "0.0.3",
+  "description": "Thank you for chosing Buffalo for your web development needs.",
   "main": "webpack.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,21 +10,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "babel": "^6.5.2",
-    "babel-core": "^6.21.0",
-    "babel-loader": "^6.2.10",
+    "babel": "^6.23.0",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.1",
     "bootstrap": "^3.3.7",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.1",
+    "expose-loader": "^0.7.3",
     "extract-text-webpack-plugin": "^1.0.1",
-    "file-loader": "^0.9.0",
+    "file-loader": "^0.10.0",
     "font-awesome": "^4.7.0",
     "jquery": "^3.1.1",
     "jquery-ujs": "^1.2.2",
-    "node-sass": "^4.1.1",
+    "node-sass": "^4.5.0",
     "npm-install-webpack-plugin": "^4.0.4",
     "path": "^0.12.7",
-    "sass-loader": "^4.1.1",
+    "sass-loader": "^6.0.0",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.14.0"
