@@ -1,17 +1,15 @@
 package actions
 
 import (
-	"os"
-
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/middleware"
-	"github.com/markbates/going/defaults"
+	"github.com/gobuffalo/envy"
 	"github.com/slashk/mtbcal/models"
 )
 
 // ENV is used to help switch settings based on where the
 // application is being run. Default is "development".
-var ENV = defaults.String(os.Getenv("GO_ENV"), "development")
+var ENV = envy.Get("GO_ENV", "development")
 var app *buffalo.App
 
 // App is where all routes and middleware for buffalo
@@ -20,7 +18,8 @@ var app *buffalo.App
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.Automatic(buffalo.Options{
-			Env: ENV,
+			Env:         ENV,
+			SessionName: "_mtbcal_session",
 		})
 
 		app.Use(middleware.PopTransaction(models.DB))
