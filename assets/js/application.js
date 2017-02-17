@@ -3,6 +3,8 @@ require("bootstrap/dist/js/bootstrap.js");
 
 $(() => {
     $('[data-toggle="tooltip"]').tooltip();
+
+    // Make sure EndDate is after StartDate
     if ($('#StartDate').length) {
       $('#StartDate').blur(function() {
         start = document.getElementById("StartDate").value;
@@ -14,6 +16,8 @@ $(() => {
         }
       });
     };
+
+    // Make sure RegCloseDate is after RegOpenDate
     if ($('#RegOpenDate').length) {
       $('#RegOpenDate').blur(function() {
         start = document.getElementById("RegOpenDate").value;
