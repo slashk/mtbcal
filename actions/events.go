@@ -20,12 +20,6 @@ func init() {
 	App().Resource("/events", resource)
 }
 
-func findEventFromUUID(c buffalo.Context) (models.Event, error) {
-	var e models.Event
-	err := models.DB.Find(&e, c.Param("event_id"))
-	return e, err
-}
-
 // List default implementation.
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
@@ -63,9 +57,8 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 		c.LogField("error", err.Error())
 		return c.Render(500, r.String(err.Error()))
 	}
-	c.Set("e", e)
+	setEventAndPage()
 	c.Set("races", races)
-	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/show.html"))
 }
 
@@ -198,6 +191,17 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 	}
 	c.Set("page", pageDefault)
 	return c.Redirect(301, "/events")
+}
+
+func findEventFromUUID(c buffalo.Context) (models.Event, error) {
+	var e models.Event
+	err := models.DB.Find(&e, c.Param("event_id"))
+	return e, err
+}
+
+func setEventAndPage() {
+	c.Set("e", e)
+	c.Set("page", pageDefault)
 }
 
 func customEventDecode(c buffalo.Context) (models.Event, error) {

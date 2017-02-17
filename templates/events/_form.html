@@ -71,3 +71,6 @@
     <input type="date" class="form-control" name="RegCloseDate" id="RegCloseDate" value="{{ formatDate e.RegCloseDate "datepicker"}}" />
   </div>
 </div>
+
+<input type="hidden" name="Active" value="{{formatBool e.Active}}">
+<input type="hidden" name="Dupe" value="{{formatBool e.Dupe}}">
