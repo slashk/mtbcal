@@ -25,22 +25,20 @@ func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
 	err := models.DB.Scope(models.Popular()).All(&popular)
 	if err != nil {
-		// TODO handle error
-		// c.Render(200, r.String("Shit problems"))
+		c.LogField("popular db error", err)
 	}
 	err = models.DB.Scope(models.Upcoming()).All(&upcoming)
 	if err != nil {
-		// TODO handle error
-		// c.Render(200, r.String("Shit problems"))
+		c.LogField("upcoming db error", err)
 	}
 	err = models.DB.Scope(models.Updated()).All(&updated)
 	if err != nil {
-		// TODO handle error
-		// c.Render(200, r.String("Shit problems"))
+		c.LogField("updated db error", err)
 	}
 	c.Set("popular", popular)
 	c.Set("upcoming", upcoming)
 	c.Set("updated", updated)
+	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/index.html"))
 }
 
@@ -48,8 +46,8 @@ func (v *EventsResource) List(c buffalo.Context) error {
 func (v *EventsResource) Show(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		// TODO handle error gracefully
-		return c.Render(500, r.String("Event id not found"))
+		c.Flash().Add("danger", "Event could not be found")
+		return c.Redirect(301, "/events")
 	}
 	races, err := models.FindRacesFromEvent(e)
 	if err != nil {
@@ -57,7 +55,7 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 		c.LogField("error", err.Error())
 		return c.Render(500, r.String(err.Error()))
 	}
-	setEventAndPage()
+	setEventAndPage(c, &e, &pageDefault)
 	c.Set("races", races)
 	return c.Render(200, r.HTML("events/show.html"))
 }
@@ -65,8 +63,9 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 // New default implementation.
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
-	c.Set("e", e)
-	c.Set("page", pageDefault)
+	setEventAndPage(c, &e, &pageDefault)
+	// c.Set("e", e)
+	// c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
@@ -199,9 +198,9 @@ func findEventFromUUID(c buffalo.Context) (models.Event, error) {
 	return e, err
 }
 
-func setEventAndPage() {
+func setEventAndPage(c buffalo.Context, e *models.Event, p *PageDefaults) {
 	c.Set("e", e)
-	c.Set("page", pageDefault)
+	c.Set("page", p)
 }
 
 func customEventDecode(c buffalo.Context) (models.Event, error) {
