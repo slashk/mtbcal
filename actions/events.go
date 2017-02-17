@@ -26,33 +26,6 @@ func findEventFromUUID(c buffalo.Context) (models.Event, error) {
 	return e, err
 }
 
-func customEventDecode(c buffalo.Context) (models.Event, error) {
-	e := models.Event{}
-	// Alternate to bind due to time.Time parsing
-	// the usual would be to do `err = c.Bind(&e)`
-	err := c.Request().ParseForm()
-	if err != nil {
-		return e, err
-	}
-	dec := schema.NewDecoder()
-	dec.IgnoreUnknownKeys(true)
-	dec.ZeroEmpty(true)
-	// this is the money call that gets us a time parser
-	dec.RegisterConverter(time.Time{}, ConvertFormDate)
-	// this is the equivalent to Bind(&e)
-	err = dec.Decode(&e, c.Request().PostForm)
-	if err != nil {
-		return e, err
-	}
-	// this makes sure WebReg bool gets set if not present
-	if c.Request().PostForm.Get("WebReg") == "" {
-		e.WebReg = false
-	}
-	c.LogField("event", e)
-	// end alternate Bind
-	return e, nil
-}
-
 // List default implementation.
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
@@ -106,23 +79,7 @@ func (v *EventsResource) New(c buffalo.Context) error {
 
 // Create default implementation.
 func (v *EventsResource) Create(c buffalo.Context) error {
-	e := models.Event{}
-	// Alternate to bind due to time.Time parsing
-	// the usual would be to do `err = c.Bind(&e)`
-	err := c.Request().ParseForm()
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	dec := schema.NewDecoder()
-	dec.IgnoreUnknownKeys(true)
-	dec.ZeroEmpty(true)
-	// this is the money call that gets us a time parser
-	dec.RegisterConverter(time.Time{}, ConvertFormDate)
-	// this is the equivalent to Bind(&e)
-	err = dec.Decode(&e, c.Request().PostForm)
-	c.LogField("event", e)
-	// end alternate Bind
-	// e.Active = true
+	e, err := customEventDecode(c)
 	verrs, err := e.Validate()
 	if err != nil {
 		return errors.WithStack(err)
@@ -241,4 +198,31 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 	}
 	c.Set("page", pageDefault)
 	return c.Redirect(301, "/events")
+}
+
+func customEventDecode(c buffalo.Context) (models.Event, error) {
+	e := models.Event{}
+	// Alternate to bind due to time.Time parsing
+	// the usual would be to do `err = c.Bind(&e)`
+	err := c.Request().ParseForm()
+	if err != nil {
+		return e, err
+	}
+	dec := schema.NewDecoder()
+	dec.IgnoreUnknownKeys(true)
+	dec.ZeroEmpty(true)
+	// this is the money call that gets us a time parser
+	dec.RegisterConverter(time.Time{}, ConvertFormDate)
+	// this is the equivalent to Bind(&e)
+	err = dec.Decode(&e, c.Request().PostForm)
+	if err != nil {
+		return e, err
+	}
+	// this makes sure WebReg bool gets set if not present
+	if c.Request().PostForm.Get("WebReg") == "" {
+		e.WebReg = false
+	}
+	c.LogField("event", e)
+	// end alternate Bind
+	return e, nil
 }
