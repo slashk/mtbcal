@@ -26,6 +26,33 @@ func findEventFromUUID(c buffalo.Context) (models.Event, error) {
 	return e, err
 }
 
+func customEventDecode(c buffalo.Context) (models.Event, error) {
+	e := models.Event{}
+	// Alternate to bind due to time.Time parsing
+	// the usual would be to do `err = c.Bind(&e)`
+	err := c.Request().ParseForm()
+	if err != nil {
+		return e, err
+	}
+	dec := schema.NewDecoder()
+	dec.IgnoreUnknownKeys(true)
+	dec.ZeroEmpty(true)
+	// this is the money call that gets us a time parser
+	dec.RegisterConverter(time.Time{}, ConvertFormDate)
+	// this is the equivalent to Bind(&e)
+	err = dec.Decode(&e, c.Request().PostForm)
+	if err != nil {
+		return e, err
+	}
+	// this makes sure WebReg bool gets set if not present
+	if c.Request().PostForm.Get("WebReg") == "" {
+		e.WebReg = false
+	}
+	c.LogField("event", e)
+	// end alternate Bind
+	return e, nil
+}
+
 // List default implementation.
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
@@ -93,29 +120,36 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	dec.RegisterConverter(time.Time{}, ConvertFormDate)
 	// this is the equivalent to Bind(&e)
 	err = dec.Decode(&e, c.Request().PostForm)
+	c.LogField("event", e)
 	// end alternate Bind
+	// e.Active = true
 	verrs, err := e.Validate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
-		c.Set("verrs", verrs.Errors)
-		c.Set("user", e)
-		return c.Render(422, r.HTML("users/new.html"))
+		c.Set("e", e)
+		c.Set("errors", verrs.Errors)
+		return c.Render(422, r.HTML("events/new.html"))
 	}
-	c.LogField("event", e)
+	// c.LogField("event", e)
 	e.Active = true
 	err = models.DB.Create(&e)
 	if err != nil {
-		return c.Render(422, r.String("new event cannot be saved to DB"))
+		c.Set("e", e)
+		c.Set("errors", "Database save error")
+		return c.Render(422, r.HTML("events/new.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		return c.Render(500, r.String("cannot reload event object"))
+		c.Set("e", e)
+		c.Set("errors", "Database reload error")
+		return c.Render(422, r.HTML("events/new.html"))
 	}
 	c.Set("e", e)
 	c.Set("page", pageDefault)
 	c.LogField("new event id", e.ID)
+	c.Flash().Add("success", "Event created successfully")
 	return c.Redirect(301, "/events/%s", e.ID.String())
 }
 
@@ -135,9 +169,9 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 func (v *EventsResource) Update(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		// TODO handle error
-		c.LogField("error", err)
-		return c.Render(500, r.String("Event id not found"))
+		c.Set("e", e)
+		c.Set("errors", "Event not found in database")
+		return c.Render(422, r.HTML("events/index.html"))
 	}
 	// Alternate to bind due to time.Time parsing
 	// the usual would be to do `err = c.Bind(&e)`
@@ -166,19 +200,23 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
-		c.Set("verrs", verrs.Errors)
-		c.Set("user", e)
+		c.Set("e", e)
+		c.Set("errors", verrs.Errors)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Update(&e)
 	if err != nil {
-		// TODO add flash
-		// return c.Render(422, r.HTML("events/edit.html"))
-		return c.Render(422, r.String("event cannot be updated in DB"))
+		// TODO should this be a 500 error ?
+		c.Set("e", e)
+		c.Set("errors", "Cannot reload event from database")
+		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		return c.Render(500, r.String("cannot reload event object"))
+		// TODO should this be a 500 error ?
+		c.Set("e", e)
+		c.Set("errors", "Cannot reload event from database")
+		return c.Render(500, r.HTML("events/edit.html"))
 	}
 	c.Set("e", e)
 	c.Set("page", pageDefault)
