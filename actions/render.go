@@ -24,6 +24,7 @@ func init() {
 		Helpers: map[string]interface{}{
 			"formatDate":   formatDate,
 			"formatLatLng": formatLatLng,
+			"formatBool":   formatBool,
 		},
 	})
 }
@@ -78,4 +79,12 @@ func formatDate(t time.Time, f string) string {
 // formatLatLng returns a formatted string to 3 decimals from a float32
 func formatLatLng(f float32) string {
 	return strconv.FormatFloat(float64(f), 'f', 3, 64)
+}
+
+// formatBool return "true" or "false" strings
+func formatBool(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
 }

@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"net/url"
 	"os"
 	"time"
 
@@ -63,15 +64,21 @@ func (e Events) String() string {
 
 // Validate gets run everytime you call a "pop.Validate" method.
 func (e *Event) Validate() (*validate.Errors, error) {
-	// var v *validate.Errors
-	// EndDate is after StartDate
+	var v *validate.Errors
 	// RegCloseDate is after RegOpenDate if web_reg is true
-	// RegOpenDate and RegCloseDate are before EndDate
 	// URL should be valid web address
 	err := e.Geocode()
 	if err != nil {
 		// TODO how do we do this ?
 		// v.Add("geocode failure", err.Error())
+	}
+	if !e.ValidDates() {
+		// TODO how do we do this ?
+		v.Add("event date range error", err.Error())
+	}
+	if !e.ValidWebReg() {
+		// TODO how do we do this ?
+		v.Add("webreg date range error", err.Error())
 	}
 	return validate.NewErrors(), nil
 }
@@ -86,6 +93,15 @@ func (e *Event) ValidateSave() (*validate.Errors, error) {
 		// TODO how do we do this ?
 		v.Add("geocode failure", err.Error())
 	}
+	if !e.ValidDates() {
+		// TODO how do we do this ?
+		v.Add("event date range error", err.Error())
+	}
+	if !e.ValidWebReg() {
+		// TODO how do we do this ?
+		v.Add("webreg date range error", err.Error())
+	}
+	e.Active = true
 	return validate.NewErrors(), nil
 }
 
@@ -101,7 +117,7 @@ func (e *Event) ValidateUpdate() (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
-// Geocode method find lat, lng and state for event location strings
+// Geocode method find lat, lng, location and state for event location strings
 func (e *Event) Geocode() error {
 	var client *maps.Client
 	var err error
@@ -124,43 +140,33 @@ func (e *Event) Geocode() error {
 	return nil
 }
 
-// geocode uses google maps to find the lat, lng of an event location
-// func geocode(loc string) (float32, float32, string, string, error) {
-// 	var client *maps.Client
-// 	var err error
-// 	mapAPI := os.Getenv("GMAP_API")
-// 	if mapAPI != "" {
-// 		client, err = maps.NewClient(maps.WithAPIKey(mapAPI))
-// 	} else {
-// 		return 0, 0, "", "", errors.New("No geocoding API key")
-// 	}
-// 	r := &maps.GeocodingRequest{
-// 		Address: loc,
-// 	}
-// 	resp, err := client.Geocode(context.Background(), r)
-// 	if err != nil {
-// 		// log.WithError(err).Debug("geocoding error")
-// 		return 0.0, 0.0, "", "", err
-// 	}
-// 	lat := float32(resp[0].Geometry.Location.Lat)
-// 	lng := float32(resp[0].Geometry.Location.Lng)
-// 	state := resp[0].AddressComponents[2].ShortName
-// 	location := resp[0].FormattedAddress
-// 	// log.WithFields(log.Fields{
-// 	// 	"response": resp,
-// 	// 	"state":    state,
-// 	// 	"lat":      lat,
-// 	// 	"location": location,
-// 	// 	"lng":      lng,
-// 	// }).Debug("geocode result")
-// 	return lat, lng, state, location, nil
-// }
+// ValidDates make event does not end before the start date
+func (e *Event) ValidDates() bool {
+	return (e.StartDate.Before(e.EndDate) || e.StartDate.Equal(e.EndDate))
+}
+
+// ValidWebReg makes sure the registration dates are valid
+func (e *Event) ValidWebReg() bool {
+	if e.RegCloseDate.After(e.EndDate) {
+		return false
+	}
+	return (e.RegOpenDate.Before(e.RegCloseDate) || e.RegOpenDate.Equal(e.RegCloseDate))
+}
+
+// ValidURL checks that the event URL is valid
+func (e *Event) ValidURL() bool {
+	_, err := url.ParseRequestURI(e.URL)
+	if err != nil {
+		return false
+	}
+	return true
+}
 
 // Upcoming finds future events
 func Upcoming() pop.ScopeFunc {
 	today := time.Now()
 	return func(q *pop.Query) *pop.Query {
-		return q.Where("start_date > ?", today)
+		return q.Where("start_date >= ?", today).Where("active = ?", true).Order("start_date asc")
 	}
 }
 
@@ -168,14 +174,14 @@ func Upcoming() pop.ScopeFunc {
 func Popular() pop.ScopeFunc {
 	// TODO
 	return func(q *pop.Query) *pop.Query {
-		return q.Order("created_at").Limit(10)
+		return q.Where("active = ?", true).Order("start_date asc").Limit(10)
 	}
 }
 
 // Updated finds recently updated events
 func Updated() pop.ScopeFunc {
 	return func(q *pop.Query) *pop.Query {
-		return q.Order("updated_at")
+		return q.Order("updated_at").Order("updated_at asc").Limit(10)
 	}
 }
 
