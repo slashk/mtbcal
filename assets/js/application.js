@@ -26,7 +26,7 @@ $(() => {
 function add_another_race() {
     // clone racesEntry div and then add right after it
     // used on event>new, event>edit and event>replicate
-    $('#races').append($(".raceEntry:first").clone());
+    $('#races').append($(".raceDetailForm:first").clone());
 }
 
 function checkDateRange() {
