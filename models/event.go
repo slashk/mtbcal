@@ -68,11 +68,8 @@ func (e Events) String() string {
 // Validate gets run everytime you call a "pop.Validate" method.
 func (e *Event) Validate() (*validate.Errors, error) {
 	v := validate.NewErrors()
-	// URL should be valid web address
 	err := e.Geocode()
 	if err != nil {
-		// TODO how do we do this ?
-		// v.Add("geocode failure", err.Error())
 		v.Add("geocode", err.Error())
 	}
 	v.Append(validate.Validate(&validators.TimeIsBeforeTime{
@@ -89,60 +86,12 @@ func (e *Event) Validate() (*validate.Errors, error) {
 			SecondTime: e.RegCloseDate,
 		}))
 	}
-	// v.Append(validate.Validate(&TimeIsBeforeOrEqualTime{
-	// 	FirstName:  "StartDate",
-	// 	FirstTime:  e.StartDate,
-	// 	SecondName: "EndDate",
-	// 	SecondTime: e.EndDate,
-	// }))
-	// if e.WebReg {
-	// 	v.Append(validate.Validate(&TimeIsBeforeOrEqualTime{
-	// 		FirstName:  "RegOpenDate",
-	// 		FirstTime:  e.RegOpenDate,
-	// 		SecondName: "RegCloseDate",
-	// 		SecondTime: e.RegCloseDate,
-	// 	}))
-	// }
 	v.Append(validate.Validate(
 		&validators.StringIsPresent{Field: e.Name, Name: "Name"},
 		&validators.StringIsPresent{Field: e.Location, Name: "Location"},
 	))
 	return v, nil
 }
-
-// // ValidateSave gets run everytime you call "pop.ValidateSave" method.
-// func (e *Event) ValidateSave() (*validate.Errors, error) {
-// 	var v *validate.Errors
-// 	// EndDate is after StartDate
-// 	// RegCloseDate is after RegOpenDate if web_reg is true
-// 	err := e.Geocode()
-// 	if err != nil {
-// 		// TODO how do we do this ?
-// 		v.Add("geocode failure", err.Error())
-// 	}
-// 	if !e.ValidDates() {
-// 		// TODO how do we do this ?
-// 		v.Add("event date range error", "End date before start date")
-// 	}
-// 	if !e.ValidWebReg() {
-// 		// TODO how do we do this ?
-// 		v.Add("webreg date range error", "Close date before open date")
-// 	}
-// 	e.Active = true
-// 	return validate.NewErrors(), nil
-// }
-//
-// // ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
-// func (e *Event) ValidateUpdate() (*validate.Errors, error) {
-// 	// var v *validate.Errors
-// 	// EndDate is after StartDate
-// 	// RegCloseDate is after RegOpenDate if web_reg is true
-// 	err := e.Geocode()
-// 	if err != nil {
-// 		// v.Add("geocode failure", "Event could not be geocoded")
-// 	}
-// 	return validate.NewErrors(), nil
-// }
 
 // Geocode method find lat, lng, location and state for event location strings
 func (e *Event) Geocode() error {
