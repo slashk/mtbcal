@@ -42,7 +42,7 @@ func (v *EventsResource) List(c buffalo.Context) error {
 	return c.Render(200, r.HTML("events/index.html"))
 }
 
-// Show default implementation.
+// Show displays a single event
 func (v *EventsResource) Show(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
@@ -60,7 +60,7 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 	return c.Render(200, r.HTML("events/show.html"))
 }
 
-// New default implementation.
+// New tees up a blank form page to enter a new event
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
 	setEventAndPage(c, &e, &pageDefault)
@@ -94,10 +94,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	// TODO change to setEventAndPage
-	c.Set("e", e)
-	c.Set("page", pageDefault)
-	c.LogField("new event id", e.ID)
+	setEventAndPage(c, &e, &pageDefault)
 	c.Flash().Add("success", "Event created successfully")
 	return c.Redirect(301, "/events/%s", e.ID.String())
 }
@@ -109,9 +106,7 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 		c.Flash().Add("danger", err.Error())
 		return c.Render(404, r.HTML("events/index.html"))
 	}
-	// TODO setEventAndPage
-	c.Set("e", e)
-	c.Set("page", pageDefault)
+	setEventAndPage(c, &e, &pageDefault)
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 
@@ -122,21 +117,7 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		c.Set("errors", "Event not found in database")
 		return c.Render(422, r.HTML("events/index.html"))
 	}
-	// Alternate to bind due to time.Time parsing
-	// the usual would be to do `err = c.Bind(&e)`
-	err = c.Request().ParseForm()
-	if err != nil {
-		// TODO handle error
-		return errors.WithStack(err)
-	}
-	dec := schema.NewDecoder()
-	dec.IgnoreUnknownKeys(true)
-	dec.ZeroEmpty(true)
-	// this is the money call that gets us a time parser
-	dec.RegisterConverter(time.Time{}, ConvertFormDate)
-	// this is the equivalent to Bind(&e)
-	err = dec.Decode(&e, c.Request().PostForm)
-	// end alternate Bind
+	e, err := customEventDecode(c)
 	if c.Request().PostForm.Get("WebReg") == "" {
 		e.WebReg = false
 	}
@@ -166,8 +147,7 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		c.Set("e", e)
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
-	c.Set("e", e)
-	c.Set("page", pageDefault)
+	setEventAndPage(c, &e, &pageDefault)
 	c.Flash().Add("success", "Event updated successfully")
 	return c.Redirect(301, "/events/%s", e.ID)
 }
@@ -189,6 +169,7 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 		return c.Render(422, r.String("event cannot be updated in DB"))
 	}
 	c.Set("page", pageDefault)
+	c.Flash().Add("success", "Event deleted")
 	return c.Redirect(301, "/events")
 }
 
