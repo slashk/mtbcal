@@ -20,7 +20,7 @@ func init() {
 	App().Resource("/events", resource)
 }
 
-// List default implementation.
+// List shows the front page with popular, upcoming and new events
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
 	err := models.DB.Scope(models.Popular()).All(&popular)
@@ -64,8 +64,6 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
 	setEventAndPage(c, &e, &pageDefault)
-	// c.Set("e", e)
-	// c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
@@ -96,6 +94,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		c.Set("errors", "Database reload error")
 		return c.Render(422, r.HTML("events/new.html"))
 	}
+	// TODO change to setEventAndPage
 	c.Set("e", e)
 	c.Set("page", pageDefault)
 	c.LogField("new event id", e.ID)
@@ -107,9 +106,13 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 func (v *EventsResource) Edit(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		c.Set("errors", "Database reload error")
+		return c.Render(404, r.HTML("events/index.html"))
 		// TODO handle error
-		return c.Render(500, r.String("Event id not found"))
+		// return c.Render(500, r.String("Event id not found"))
+
 	}
+	// TODO setEventAndPage
 	c.Set("e", e)
 	c.Set("page", pageDefault)
 	return c.Render(200, r.HTML("events/edit.html"))
@@ -119,7 +122,6 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 func (v *EventsResource) Update(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		c.Set("e", e)
 		c.Set("errors", "Event not found in database")
 		return c.Render(422, r.HTML("events/index.html"))
 	}
@@ -150,22 +152,26 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
+		c.Flash().Add("danger", verrs.String())
+		c.LogField("validation error", verrs)
 		c.Set("e", e)
-		c.Set("errors", verrs.Errors)
+		// c.Set("errors", verrs.Errors)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Update(&e)
 	if err != nil {
 		// TODO should this be a 500 error ?
+		c.Flash().Add("danger", err.Error())
 		c.Set("e", e)
-		c.Set("errors", "Cannot reload event from database")
+		// c.Set("errors", "Cannot reload event from database")
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
 		// TODO should this be a 500 error ?
+		c.Flash().Add("danger", err.Error())
 		c.Set("e", e)
-		c.Set("errors", "Cannot reload event from database")
+		// c.Set("errors", "Cannot reload event from database")
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
 	c.Set("e", e)

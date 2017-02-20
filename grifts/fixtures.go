@@ -11,46 +11,49 @@ import (
 )
 
 var _ = Add("fixtures", func(c *Context) error {
+	n := time.Now()
 	one := models.Event{
 		Name:         "BigBoy",
 		Location:     "Folsom, CA",
 		WebReg:       true,
 		Active:       true,
-		PublishedAt:  time.Now(),
-		StartDate:    time.Now(),
-		EndDate:      time.Now(),
-		RegOpenDate:  time.Now(),
-		RegCloseDate: time.Now(),
+		PublishedAt:  n,
+		StartDate:    n.Add(5 * 24 * time.Hour),
+		EndDate:      n.Add(5 * 24 * time.Hour),
+		RegOpenDate:  n.Add(1 * 24 * time.Hour),
+		RegCloseDate: n.Add(5 * 24 * time.Hour),
 		Description:  "This is the bigboy event",
 		URL:          "http://www.mtbcalendar.com",
 		UserID:       "admin",
 		Country:      "US",
 	}
 	two := models.Event{
-		Name:         "LittleBoy",
-		Location:     "Boulder, CO",
-		WebReg:       false,
-		Active:       false,
-		PublishedAt:  time.Now(),
-		StartDate:    time.Now().Add(300 * time.Hour),
-		EndDate:      time.Now(),
-		RegOpenDate:  time.Now(),
-		RegCloseDate: time.Now(),
-		Description:  "This is the bigboy event",
-		URL:          "http://www.mtbcalendar.com",
-		UserID:       "boss",
-		Country:      "US",
+		Name:        "LittleBoy",
+		Location:    "Boulder, CO",
+		WebReg:      false,
+		Active:      false,
+		PublishedAt: n,
+		StartDate:   n.Add(90 * 24 * time.Hour),
+		EndDate:     n.Add(95 * 24 * time.Hour),
+		// no webreg
+		// RegOpenDate:  n.Add(5 * 24 * time.Hour),
+		// RegCloseDate: n.Add(89 * 24 * time.Hour),
+		Description: "This is the bigboy event",
+		URL:         "http://www.mtbcalendar.com",
+		UserID:      "boss",
+		Country:     "US",
 	}
 	longone := models.Event{
-		Name:         "The Otway Odyssey and Great Otway Gravel Grind (GOGG)",
-		Location:     "Forrest VIC 3236, Australia",
-		WebReg:       false,
-		Active:       false,
-		PublishedAt:  time.Now(),
-		StartDate:    time.Now().Add(600 * time.Hour),
-		EndDate:      time.Now(),
-		RegOpenDate:  time.Now(),
-		RegCloseDate: time.Now(),
+		Name:        "The Otway Odyssey and Great Otway Gravel Grind (GOGG)",
+		Location:    "Forrest VIC 3236, Australia",
+		WebReg:      false,
+		Active:      false,
+		PublishedAt: n,
+		StartDate:   n.Add(150 * 24 * time.Hour),
+		EndDate:     n.Add(150 * 24 * time.Hour),
+		// no webreg
+		// RegOpenDate:  n,
+		// RegCloseDate: n,
 		Description: `The Otway Odyssey presented by Focus is one of Australia’s most respected off-road cycling events thanks to the quality of the courses with lung busting hills, blitzing descents and an electrifying race atmosphere that welcomes any rider – mountain bikers, roadies and gravel grinders.
 For 10 years, riders have travelled to the famous Otway rainforest of Forrest in south-western Victoria to take on the region’s iconic single track, but in 2017 even more riders can be part of the action with the addition of the Great Otway Gravel Grind (The GOGG) 49km and 97km races to the schedule of events.
 The action gets underway on Saturday 25th February with the principle mountain bike races; the 100km Odyssey, the 50km Shorty and the 30km Rookie, all starting and finishing amidst a huge bike expo and food festival at the Forrest Football Ground. The GOGG races and the kids 10km Pioneer MTB will be held on Sunday 26th February.
