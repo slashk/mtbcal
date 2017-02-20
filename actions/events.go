@@ -77,7 +77,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	}
 	if verrs.HasAny() {
 		c.Set("e", e)
-		c.Set("errors", verrs.Errors)
+		c.Flash().Add("danger", verrs.String())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
 	// c.LogField("event", e)
@@ -85,13 +85,13 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	err = models.DB.Create(&e)
 	if err != nil {
 		c.Set("e", e)
-		c.Set("errors", "Database save error")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
 		c.Set("e", e)
-		c.Set("errors", "Database reload error")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
 	// TODO change to setEventAndPage
@@ -106,11 +106,8 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 func (v *EventsResource) Edit(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		c.Set("errors", "Database reload error")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(404, r.HTML("events/index.html"))
-		// TODO handle error
-		// return c.Render(500, r.String("Event id not found"))
-
 	}
 	// TODO setEventAndPage
 	c.Set("e", e)
@@ -155,27 +152,23 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		c.Flash().Add("danger", verrs.String())
 		c.LogField("validation error", verrs)
 		c.Set("e", e)
-		// c.Set("errors", verrs.Errors)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Update(&e)
 	if err != nil {
-		// TODO should this be a 500 error ?
 		c.Flash().Add("danger", err.Error())
 		c.Set("e", e)
-		// c.Set("errors", "Cannot reload event from database")
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		// TODO should this be a 500 error ?
 		c.Flash().Add("danger", err.Error())
 		c.Set("e", e)
-		// c.Set("errors", "Cannot reload event from database")
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
 	c.Set("e", e)
 	c.Set("page", pageDefault)
+	c.Flash().Add("success", "Event updated successfully")
 	return c.Redirect(301, "/events/%s", e.ID)
 }
 
