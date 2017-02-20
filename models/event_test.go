@@ -80,12 +80,12 @@ func TestEventString(t *testing.T) {
 // 	r.Equal(eEqual.ValidWebReg(), true, "Equal Reg should be valid")
 // }
 
-// func TestValidURL(t *testing.T) {
-// 	r := require.New(t)
-// 	valid := models.Event{URL: "http://google.com"}
-// 	r.True(valid.ValidURL(), "should be valid url")
-// 	invalid := models.Event{URL: "sdfsdfsf"}
-// 	r.False(invalid.ValidURL(), "should be invalid url")
-// 	a := models.Event{URL: "http//google.com"}
-// 	r.False(a.ValidURL(), "should be invalid url")
-// }
+func TestValidURL(t *testing.T) {
+	r := require.New(t)
+	valid := models.Event{URL: "http://google.com"}
+	r.True(valid.ValidURL(), "should be valid url")
+	invalid := models.Event{URL: "sdfsdfsf"}
+	r.False(invalid.ValidURL(), "should be invalid url")
+	a := models.Event{URL: "http//google.com"}
+	r.False(a.ValidURL(), "should be invalid url")
+}
