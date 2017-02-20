@@ -71,6 +71,7 @@ func (v *EventsResource) New(c buffalo.Context) error {
 
 // Create default implementation.
 func (v *EventsResource) Create(c buffalo.Context) error {
+	c.LogField("response", c.Request().PostForm)
 	e, err := customEventDecode(c)
 	verrs, err := e.Validate()
 	if err != nil {

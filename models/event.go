@@ -166,7 +166,7 @@ func (e *Event) ValidURL() bool {
 func Upcoming() pop.ScopeFunc {
 	today := time.Now()
 	return func(q *pop.Query) *pop.Query {
-		return q.Where("start_date > ?", today).Where("active = ?", true).Order("start_date asc")
+		return q.Where("start_date >= ?", today).Where("active = ?", true).Order("start_date asc")
 	}
 }
 
