@@ -46,17 +46,7 @@ func (r *Race) Validate() (*validate.Errors, error) {
 		v.Add("raceformat", "race format does not exist")
 	}
 	// ensure that event_id exists
-	return validate.NewErrors(), nil
-}
-
-// ValidateSave gets run everytime you call "pop.ValidateSave" method.
-func (r *Race) ValidateSave() (*validate.Errors, error) {
-	return validate.NewErrors(), nil
-}
-
-// ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
-func (r *Race) ValidateUpdate() (*validate.Errors, error) {
-	return validate.NewErrors(), nil
+	return v, nil
 }
 
 // FindRacesFromEvent returns array of races attached to an event
