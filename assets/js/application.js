@@ -30,10 +30,10 @@ function add_another_race() {
   raceCount = $('.raceDetailForm').length;
   var section = template.clone().find(':input').each(function(){
     var fieldName = $('label[for="' + this.name + '"]').html();
-    var newId = "Race-" + raceCount + "-" + fieldName;
-    var newName = "Race." + raceCount + "." + fieldName;
+    var newId = "Race." + raceCount + "." + fieldName;
+    // var newName = "Race." + raceCount + "." + fieldName;
     this.id = newId;
-    this.name = newName;
+    this.name = newId;
   }).end()
   .appendTo('#races');
   return false;

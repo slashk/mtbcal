@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/markbates/validate"
+	"github.com/markbates/validate/validators"
 	"github.com/satori/go.uuid"
 )
 
@@ -42,10 +43,13 @@ func (r Races) String() string {
 func (r *Race) Validate() (*validate.Errors, error) {
 	var v *validate.Errors
 	// ensure that format_id exists
-	if raceFormatExists(r.FormatID) == false {
-		v.Add("raceformat", "race format does not exist")
-	}
+	// if raceFormatExists(r.FormatID) == false {
+	// 	v.Add("raceformat", "race format does not exist")
+	// }
 	// ensure that event_id exists
+	v.Append(validate.Validate(
+		&validators.StringIsPresent{Field: r.License, Name: "License"},
+	))
 	return v, nil
 }
 

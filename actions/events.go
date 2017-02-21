@@ -68,9 +68,9 @@ func (v *EventsResource) New(c buffalo.Context) error {
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
-// Create default implementation.
+// Create stores a new event in the database
 func (v *EventsResource) Create(c buffalo.Context) error {
-	c.LogField("response", c.Request().PostForm)
+	c.LogField("postform", c.Request().PostForm)
 	e, err := customEventDecode(c)
 	verrs, err := e.Validate()
 	if err != nil {
@@ -92,7 +92,23 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	_, err = decodeRacesFromPost(c)
+	races, err := decodeRacesFromPost(c)
+	for race := range races {
+		races[race].EventID = e.ID
+		// verrs, err := races[race].Validate()
+		// if err != nil {
+		// 	return errors.WithStack(err)
+		// }
+		// if verrs.HasAny() {
+		// 	c.Flash().Add("danger", verrs.String())
+		// 	return c.Render(422, r.HTML("events/new.html"))
+		// }
+		err = models.DB.Create(&races[race])
+		if err != nil {
+			c.Flash().Add("danger", err.Error())
+			return c.Render(422, r.HTML("events/new.html"))
+		}
+	}
 	c.Flash().Add("success", "Event created successfully")
 	return c.Redirect(301, "/events/%s", e.ID.String())
 }
@@ -210,17 +226,30 @@ func customEventDecode(c buffalo.Context) (models.Event, error) {
 }
 
 func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
-	err := c.Request().ParseForm()
-	if err != nil {
-		return models.Races{}, err
-	}
+	var races models.Races
+	// c.LogField("decode starting", true)
+	// err := c.Request().ParseForm()
+	// if err != nil {
+	// 	return models.Races{}, err
+	// }
 	for x := 0; true; x++ {
-		key := fmt.Sprintf("Races.%v.Cost", x)
-		z := c.Request().PostFormValue(key)
-		if z == "" {
+		r := models.Race{}
+		// comes across as 'Race.0.Cost'
+		k := map[string]string{
+			"Cost":        fmt.Sprintf("Race.%d.Cost", x),
+			"Description": fmt.Sprintf("Race.%d.Description", x),
+			"URL":         fmt.Sprintf("Race.%d.URL", x),
+			"License":     fmt.Sprintf("Race.%d.License", x),
+		}
+		r.Cost = c.Request().PostFormValue(k["Cost"])
+		r.Description = c.Request().PostFormValue(k["Description"])
+		r.URL = c.Request().PostFormValue(k["URL"])
+		r.License = c.Request().PostFormValue(k["License"])
+		if r.License == "" {
 			break
 		}
-		c.LogField("Cost", z)
+		races = append(races, r)
 	}
-	return models.Races{}, nil
+	c.LogField("races", races)
+	return races, nil
 }
