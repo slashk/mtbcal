@@ -56,15 +56,15 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 		c.LogField("error", err.Error())
 		return c.Render(500, r.String(err.Error()))
 	}
-	setEventAndPage(c, &e, &pageDefault)
-	c.Set("races", races)
+	setEventAndPage(c, &e, &pageDefault, &races)
+	// c.Set("races", races)
 	return c.Render(200, r.HTML("events/show.html"))
 }
 
 // New tees up a blank form page to enter a new event
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
-	setEventAndPage(c, &e, &pageDefault)
+	setEventAndPage(c, &e, &pageDefault, &models.Races{})
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
@@ -80,7 +80,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		c.Flash().Add("danger", verrs.String())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	setEventAndPage(c, &e, &pageDefault)
+	// setEventAndPage(c, &e, &pageDefault)
 	e.Active = true
 	err = models.DB.Create(&e)
 	if err != nil {
@@ -120,7 +120,13 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 		c.Flash().Add("danger", err.Error())
 		return c.Render(404, r.HTML("events/index.html"))
 	}
-	setEventAndPage(c, &e, &pageDefault)
+	races, err := models.FindRacesFromEvent(e)
+	if err != nil {
+		// TODO handle error gracefully
+		c.LogField("error", err.Error())
+		return c.Render(500, r.String(err.Error()))
+	}
+	setEventAndPage(c, &e, &pageDefault, &races)
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 
@@ -136,14 +142,21 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 	if c.Request().PostForm.Get("WebReg") == "" {
 		e.WebReg = false
 	}
-	c.LogField("event", e)
 	if err != nil {
 		return errors.WithStack(err)
+	}
+	c.LogField("event", e)
+	races, err := models.FindRacesFromEvent(e)
+	if err != nil {
+		// TODO handle error gracefully
+		c.LogField("error", err.Error())
+		return c.Render(500, r.String(err.Error()))
 	}
 	verrs, err := e.Validate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	setEventAndPage(c, &e, &pageDefault, &races)
 	if verrs.HasAny() {
 		c.Flash().Add("danger", verrs.String())
 		c.LogField("validation error", verrs)
@@ -153,14 +166,12 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 	if err != nil {
 		c.Flash().Add("danger", "Update failed")
 		c.Flash().Add("danger", err.Error())
-		setEventAndPage(c, &e, &pageDefault)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
 		c.Flash().Add("danger", "Reload failed")
 		c.Flash().Add("danger", err.Error())
-		setEventAndPage(c, &e, &pageDefault)
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
 	c.Flash().Add("success", "Event updated successfully")
@@ -194,9 +205,12 @@ func findEventFromUUID(c buffalo.Context) (models.Event, error) {
 	return e, err
 }
 
-func setEventAndPage(c buffalo.Context, e *models.Event, p *PageDefaults) {
+func setEventAndPage(c buffalo.Context, e *models.Event, p *PageDefaults, r *models.Races) {
 	c.Set("e", e)
 	c.Set("page", p)
+	if len((*r)) > 0 {
+		c.Set("races", r)
+	}
 }
 
 func customEventDecode(c buffalo.Context) (models.Event, error) {
@@ -227,14 +241,10 @@ func customEventDecode(c buffalo.Context) (models.Event, error) {
 
 func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
 	var races models.Races
-	// c.LogField("decode starting", true)
-	// err := c.Request().ParseForm()
-	// if err != nil {
-	// 	return models.Races{}, err
-	// }
 	for x := 0; true; x++ {
 		r := models.Race{}
 		// comes across as 'Race.0.Cost'
+		// TODO refactor this to some kind of custom bind
 		k := map[string]string{
 			"Cost":        fmt.Sprintf("Race.%d.Cost", x),
 			"Description": fmt.Sprintf("Race.%d.Description", x),
