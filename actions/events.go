@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -76,25 +77,22 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
-		c.Set("e", e)
 		c.Flash().Add("danger", verrs.String())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	// c.LogField("event", e)
+	setEventAndPage(c, &e, &pageDefault)
 	e.Active = true
 	err = models.DB.Create(&e)
 	if err != nil {
-		c.Set("e", e)
 		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		c.Set("e", e)
 		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	setEventAndPage(c, &e, &pageDefault)
+	_, err = decodeRacesFromPost(c)
 	c.Flash().Add("success", "Event created successfully")
 	return c.Redirect(301, "/events/%s", e.ID.String())
 }
@@ -114,10 +112,11 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 func (v *EventsResource) Update(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		c.Set("errors", "Event not found in database")
+		c.Flash().Add("danger", "Find failed")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/index.html"))
 	}
-	e, err := customEventDecode(c)
+	e, err = customEventDecode(c)
 	if c.Request().PostForm.Get("WebReg") == "" {
 		e.WebReg = false
 	}
@@ -132,22 +131,22 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 	if verrs.HasAny() {
 		c.Flash().Add("danger", verrs.String())
 		c.LogField("validation error", verrs)
-		c.Set("e", e)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Update(&e)
 	if err != nil {
+		c.Flash().Add("danger", "Update failed")
 		c.Flash().Add("danger", err.Error())
-		c.Set("e", e)
+		setEventAndPage(c, &e, &pageDefault)
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
+		c.Flash().Add("danger", "Reload failed")
 		c.Flash().Add("danger", err.Error())
-		c.Set("e", e)
+		setEventAndPage(c, &e, &pageDefault)
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
-	setEventAndPage(c, &e, &pageDefault)
 	c.Flash().Add("success", "Event updated successfully")
 	return c.Redirect(301, "/events/%s", e.ID)
 }
@@ -157,16 +156,16 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 	// TODO admin middleware
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		return c.Render(404, r.String("event cannot be found"))
+		c.Flash().Add("danger", err.Error())
+		return c.Render(404, r.HTML("events/index.html"))
 	}
 	e.Active = false
-	// don't actually delete in the DB, just mark inactive
+	// TODO don't actually delete in the DB, just mark inactive
 	// err = models.DB.Destroy(&models.Event{ID: e.ID})
 	err = models.DB.Update(&e)
 	if err != nil {
-		// TODO add flash
-		// return c.Render(422, r.HTML("events/edit.html"))
-		return c.Render(422, r.String("event cannot be updated in DB"))
+		c.Flash().Add("danger", err.Error())
+		return c.Render(500, r.HTML("events/index.html"))
 	}
 	c.Set("page", pageDefault)
 	c.Flash().Add("success", "Event deleted")
@@ -207,6 +206,21 @@ func customEventDecode(c buffalo.Context) (models.Event, error) {
 		e.WebReg = false
 	}
 	c.LogField("event", e)
-	// end alternate Bind
 	return e, nil
+}
+
+func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
+	err := c.Request().ParseForm()
+	if err != nil {
+		return models.Races{}, err
+	}
+	for x := 0; true; x++ {
+		key := fmt.Sprintf("Races.%v.Cost", x)
+		z := c.Request().PostFormValue(key)
+		if z == "" {
+			break
+		}
+		c.LogField("Cost", z)
+	}
+	return models.Races{}, nil
 }
