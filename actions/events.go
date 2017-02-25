@@ -2,11 +2,13 @@ package actions
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gorilla/schema"
 	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	"github.com/slashk/mtbcal/models"
 )
 
@@ -47,6 +49,7 @@ func (v *EventsResource) List(c buffalo.Context) error {
 func (v *EventsResource) Show(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		c.LogField("error", err)
 		c.Flash().Add("danger", "Event could not be found")
 		return c.Redirect(301, "/events")
 	}
@@ -64,7 +67,8 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 // New tees up a blank form page to enter a new event
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
-	setEventAndPage(c, &e, &pageDefault, &models.Races{})
+	rs := models.NewEmptyRace()
+	setEventAndPage(c, &e, &pageDefault, &rs)
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
@@ -74,6 +78,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	e, err := customEventDecode(c)
 	verrs, err := e.Validate()
 	if err != nil {
+		// TODO gracefully flash and return to new or index ?
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
@@ -95,6 +100,7 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 	races, err := decodeRacesFromPost(c)
 	for race := range races {
 		races[race].EventID = e.ID
+		// TODO handle race decode errors
 		// verrs, err := races[race].Validate()
 		// if err != nil {
 		// 	return errors.WithStack(err)
@@ -146,22 +152,42 @@ func (v *EventsResource) Update(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 	c.LogField("event", e)
-	races, err := models.FindRacesFromEvent(e)
+	races, err := decodeRacesFromPost(c)
+	// races, err := models.FindRacesFromEvent(e)
 	if err != nil {
 		// TODO handle error gracefully
 		c.LogField("error", err.Error())
 		return c.Render(500, r.String(err.Error()))
 	}
-	verrs, err := e.Validate()
-	if err != nil {
-		return errors.WithStack(err)
+	for race := range races {
+		// races[race].EventID = e.ID
+		// TODO fix validations
+		// races[race].Validate()
+		// if verrs.HasAny() {
+		// 	c.Flash().Add("danger", verrs.String())
+		// 	c.LogField("validation error", verrs)
+		// 	return c.Render(422, r.HTML("events/edit.html"))
+		// }
+		// verrs, err := e.Validate()
+		// if err != nil {
+		// 	return errors.WithStack(err)
+		// }
+		c.LogField(fmt.Sprintf("race-%d", race), races[race].Description)
+		races[race].Validate()
+		err = models.DB.Update(&races[race])
+		if err != nil {
+			c.Flash().Add("danger", err.Error())
+			return c.Render(422, r.HTML("events/new.html"))
+		}
+		// err = models.DB.Reload(&races[race])
+		// if err != nil {
+		// 	c.Flash().Add("danger", "Reload failed")
+		// 	c.Flash().Add("danger", err.Error())
+		// 	return c.Render(500, r.HTML("events/edit.html"))
+		// }
 	}
+	e.Validate()
 	setEventAndPage(c, &e, &pageDefault, &races)
-	if verrs.HasAny() {
-		c.Flash().Add("danger", verrs.String())
-		c.LogField("validation error", verrs)
-		return c.Render(422, r.HTML("events/edit.html"))
-	}
 	err = models.DB.Update(&e)
 	if err != nil {
 		c.Flash().Add("danger", "Update failed")
@@ -246,18 +272,26 @@ func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
 		// comes across as 'Race.0.Cost'
 		// TODO refactor this to some kind of custom bind
 		k := map[string]string{
+			"ID":          fmt.Sprintf("Race.%d.ID", x),
+			"EventID":     fmt.Sprintf("Race.%d.EventID", x),
 			"Cost":        fmt.Sprintf("Race.%d.Cost", x),
 			"Description": fmt.Sprintf("Race.%d.Description", x),
 			"URL":         fmt.Sprintf("Race.%d.URL", x),
 			"License":     fmt.Sprintf("Race.%d.License", x),
 		}
+		// TODO more graceful formatID handling
+		r.ID, _ = uuid.FromString(c.Request().PostFormValue(k["ID"]))
+		r.EventID, _ = uuid.FromString(c.Request().PostFormValue(k["EventID"]))
+		r.FormatID, _ = strconv.Atoi(c.Request().PostFormValue(k["FormatID"]))
 		r.Cost = c.Request().PostFormValue(k["Cost"])
 		r.Description = c.Request().PostFormValue(k["Description"])
 		r.URL = c.Request().PostFormValue(k["URL"])
 		r.License = c.Request().PostFormValue(k["License"])
+		// TODO this is bad -- check all variables ?
 		if r.License == "" {
 			break
 		}
+		// c.LogField(fmt.Sprintf("bare-%d", x), r.Description)
 		races = append(races, r)
 	}
 	c.LogField("races", races)
