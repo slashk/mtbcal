@@ -12,6 +12,7 @@ import (
 
 var _ = Add("fixtures", func(c *Context) error {
 	n := time.Now()
+	desc := "Lorem epsom"
 	one := models.Event{
 		Name:         "BigBoy",
 		Location:     "Folsom, CA",
@@ -85,21 +86,25 @@ An extensive event expo with sponsors stands, food, drinks, entertainment and ac
 		}
 	}
 	rOne := models.Race{Cost: "$10", FormatID: 1, EventID: events[0].ID, URL: "http://yahoo.com", License: "USA Cycling"}
+	rOne.Description = desc
 	err := models.DB.Create(&rOne)
 	if err != nil {
 		log.Panic(err)
 	}
 	rTwo := models.Race{Cost: "$20", FormatID: 2, EventID: events[1].ID, URL: "http://google.com", License: "ORBA"}
+	rTwo.Description = desc
 	err = models.DB.Create(&rTwo)
 	if err != nil {
 		log.Panic(err)
 	}
 	rLongOne := models.Race{Cost: "$30", FormatID: 3, EventID: events[2].ID, URL: "http://cxmagazine.com", License: "None"}
+	rLongOne.Description = desc
 	err = models.DB.Create(&rLongOne)
 	if err != nil {
 		log.Panic(err)
 	}
 	rLongTwo := models.Race{Cost: "$40", FormatID: 4, EventID: events[2].ID, URL: "http://atom.com", License: "CX"}
+	rLongTwo.Description = desc
 	err = models.DB.Create(&rLongTwo)
 	if err != nil {
 		log.Panic(err)
