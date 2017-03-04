@@ -6,7 +6,6 @@ import (
 
 	. "github.com/markbates/grift/grift"
 	"github.com/olekukonko/tablewriter"
-	// "github.com/slashk/mtbcal/actions"
 	"github.com/slashk/mtbcal/models"
 )
 

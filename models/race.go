@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/markbates/validate"
+	"github.com/markbates/validate/validators"
 	"github.com/satori/go.uuid"
 )
 
@@ -17,7 +18,7 @@ type Race struct {
 
 	Cost        string    `json:"cost" db:"cost"`
 	License     string    `json:"license" db:"license"`
-	Description string    `json:"description" db:"description"`
+	Description string    `db:"description,size:1024" json:"description,size:1024"`
 	URL         string    `json:"url" db:"url"`
 	EventID     uuid.UUID `json:"event_id" db:"event_id"`
 	FormatID    int       `json:"format_id" db:"format_id"`
@@ -42,21 +43,27 @@ func (r Races) String() string {
 func (r *Race) Validate() (*validate.Errors, error) {
 	var v *validate.Errors
 	// ensure that format_id exists
-	if raceFormatExists(r.FormatID) == false {
-		v.Add("raceformat", "race format does not exist")
-	}
+	// if raceFormatExists(r.FormatID) == false {
+	// 	v.Add("raceformat", "race format does not exist")
+	// }
 	// ensure that event_id exists
-	return validate.NewErrors(), nil
+	v.Append(validate.Validate(
+		&validators.StringIsPresent{Field: r.License, Name: "License"},
+	))
+	return v, nil
 }
 
-// ValidateSave gets run everytime you call "pop.ValidateSave" method.
-func (r *Race) ValidateSave() (*validate.Errors, error) {
-	return validate.NewErrors(), nil
-}
-
-// ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
-func (r *Race) ValidateUpdate() (*validate.Errors, error) {
-	return validate.NewErrors(), nil
+// NewEmptyRace creates a valid new Event
+func NewEmptyRace() Races {
+	return Races{
+		Race{
+			Cost:        "",
+			License:     "",
+			Description: "",
+			URL:         "",
+			FormatID:    1,
+		},
+	}
 }
 
 // FindRacesFromEvent returns array of races attached to an event

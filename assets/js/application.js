@@ -17,21 +17,35 @@ $(() => {
         checkRegRange();
       });
     };
-
     $('#add_race_button').click(function () {
         add_another_race();
+    });
+    $('#remove_race_button').click(function () {
+        remove_race();
     });
 });
 
 function add_another_race() {
-    // clone racesEntry div and then add right after it
-    // used on event>new, event>edit and event>replicate
-    $('#races').append($(".raceEntry:first").clone());
+  var template = $('#races .raceDetailForm:first').clone();
+  raceCount = $('.raceDetailForm').length;
+  var section = template.clone().find(':input').each(function(){
+    var fieldName = $('label[for="' + this.name + '"]').html();
+    var newId = "Race." + raceCount + "." + fieldName;
+    // var newName = "Race." + raceCount + "." + fieldName;
+    this.id = newId;
+    this.name = newId;
+  }).end()
+  .appendTo('#races');
+  return false;
+}
+
+function remove_race() {
+  $('#races .raceDetailForm:last').fadeOut(300, function() { $(this).remove(); });
+  return false;
 }
 
 function checkDateRange() {
   start = document.getElementById("StartDate").value;
-  // end = document.getElementById("EndDate").value;
   startD = document.getElementById("StartDate").valueAsDate;
   endD = document.getElementById("EndDate").valueAsDate;
   if (startD > endD) {
@@ -41,7 +55,6 @@ function checkDateRange() {
 
 function checkRegRange() {
   start = document.getElementById("RegOpenDate").value;
-  // end = document.getElementById("EndDate").value;
   startD = document.getElementById("RegOpenDate").valueAsDate;
   endD = document.getElementById("RegCloseDate").valueAsDate;
   if (startD > endD) {

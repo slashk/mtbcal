@@ -11,6 +11,7 @@ import (
 
 	"github.com/markbates/pop"
 	"github.com/markbates/validate"
+	"github.com/markbates/validate/validators"
 	"github.com/satori/go.uuid"
 	"googlemaps.github.io/maps"
 )
@@ -42,6 +43,8 @@ type Event struct {
 	Twin         string    `db:"twin"                  json:"twin"`
 	Country      string    `db:"country"               json:"country"`
 
+	// Races []Race
+
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
@@ -64,57 +67,30 @@ func (e Events) String() string {
 
 // Validate gets run everytime you call a "pop.Validate" method.
 func (e *Event) Validate() (*validate.Errors, error) {
-	var v *validate.Errors
-	// RegCloseDate is after RegOpenDate if web_reg is true
-	// URL should be valid web address
+	v := validate.NewErrors()
 	err := e.Geocode()
 	if err != nil {
-		// TODO how do we do this ?
-		// v.Add("geocode failure", err.Error())
+		v.Add("geocode", err.Error())
 	}
-	if !e.ValidDates() {
-		// TODO how do we do this ?
-		v.Add("event date range error", err.Error())
+	v.Append(validate.Validate(&validators.TimeIsBeforeTime{
+		FirstName:  "StartDate",
+		FirstTime:  e.StartDate,
+		SecondName: "EndDate",
+		SecondTime: e.EndDate,
+	}))
+	if e.WebReg {
+		v.Append(validate.Validate(&validators.TimeIsBeforeTime{
+			FirstName:  "RegOpenDate",
+			FirstTime:  e.RegOpenDate,
+			SecondName: "RegCloseDate",
+			SecondTime: e.RegCloseDate,
+		}))
 	}
-	if !e.ValidWebReg() {
-		// TODO how do we do this ?
-		v.Add("webreg date range error", err.Error())
-	}
-	return validate.NewErrors(), nil
-}
-
-// ValidateSave gets run everytime you call "pop.ValidateSave" method.
-func (e *Event) ValidateSave() (*validate.Errors, error) {
-	var v *validate.Errors
-	// EndDate is after StartDate
-	// RegCloseDate is after RegOpenDate if web_reg is true
-	err := e.Geocode()
-	if err != nil {
-		// TODO how do we do this ?
-		v.Add("geocode failure", err.Error())
-	}
-	if !e.ValidDates() {
-		// TODO how do we do this ?
-		v.Add("event date range error", err.Error())
-	}
-	if !e.ValidWebReg() {
-		// TODO how do we do this ?
-		v.Add("webreg date range error", err.Error())
-	}
-	e.Active = true
-	return validate.NewErrors(), nil
-}
-
-// ValidateUpdate gets run everytime you call "pop.ValidateUpdate" method.
-func (e *Event) ValidateUpdate() (*validate.Errors, error) {
-	// var v *validate.Errors
-	// EndDate is after StartDate
-	// RegCloseDate is after RegOpenDate if web_reg is true
-	err := e.Geocode()
-	if err != nil {
-		// v.Add("geocode failure", "Event could not be geocoded")
-	}
-	return validate.NewErrors(), nil
+	v.Append(validate.Validate(
+		&validators.StringIsPresent{Field: e.Name, Name: "Name"},
+		&validators.StringIsPresent{Field: e.Location, Name: "Location"},
+	))
+	return v, nil
 }
 
 // Geocode method find lat, lng, location and state for event location strings
@@ -138,19 +114,6 @@ func (e *Event) Geocode() error {
 	e.State = resp[0].AddressComponents[2].ShortName
 	e.Location = resp[0].FormattedAddress
 	return nil
-}
-
-// ValidDates make event does not end before the start date
-func (e *Event) ValidDates() bool {
-	return (e.StartDate.Before(e.EndDate) || e.StartDate.Equal(e.EndDate))
-}
-
-// ValidWebReg makes sure the registration dates are valid
-func (e *Event) ValidWebReg() bool {
-	if e.RegCloseDate.After(e.EndDate) {
-		return false
-	}
-	return (e.RegOpenDate.Before(e.RegCloseDate) || e.RegOpenDate.Equal(e.RegCloseDate))
 }
 
 // ValidURL checks that the event URL is valid

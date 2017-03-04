@@ -1,11 +1,14 @@
 package actions
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gorilla/schema"
 	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	"github.com/slashk/mtbcal/models"
 )
 
@@ -20,7 +23,7 @@ func init() {
 	App().Resource("/events", resource)
 }
 
-// List default implementation.
+// List shows the front page with popular, upcoming and new events
 func (v *EventsResource) List(c buffalo.Context) error {
 	var popular, upcoming, updated models.Events
 	err := models.DB.Scope(models.Popular()).All(&popular)
@@ -42,10 +45,11 @@ func (v *EventsResource) List(c buffalo.Context) error {
 	return c.Render(200, r.HTML("events/index.html"))
 }
 
-// Show default implementation.
+// Show displays a single event
 func (v *EventsResource) Show(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
+		c.LogField("error", err)
 		c.Flash().Add("danger", "Event could not be found")
 		return c.Redirect(301, "/events")
 	}
@@ -55,50 +59,62 @@ func (v *EventsResource) Show(c buffalo.Context) error {
 		c.LogField("error", err.Error())
 		return c.Render(500, r.String(err.Error()))
 	}
-	setEventAndPage(c, &e, &pageDefault)
-	c.Set("races", races)
+	setEventAndPage(c, &e, &pageDefault, &races)
+	// c.Set("races", races)
 	return c.Render(200, r.HTML("events/show.html"))
 }
 
-// New default implementation.
+// New tees up a blank form page to enter a new event
 func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
-	setEventAndPage(c, &e, &pageDefault)
-	// c.Set("e", e)
-	// c.Set("page", pageDefault)
+	rs := models.NewEmptyRace()
+	setEventAndPage(c, &e, &pageDefault, &rs)
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
-// Create default implementation.
+// Create stores a new event in the database
 func (v *EventsResource) Create(c buffalo.Context) error {
-	c.LogField("response", c.Request().PostForm)
+	c.LogField("postform", c.Request().PostForm)
 	e, err := customEventDecode(c)
 	verrs, err := e.Validate()
 	if err != nil {
+		// TODO gracefully flash and return to new or index ?
 		return errors.WithStack(err)
 	}
 	if verrs.HasAny() {
-		c.Set("e", e)
-		c.Set("errors", verrs.Errors)
+		c.Flash().Add("danger", verrs.String())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	// c.LogField("event", e)
+	// setEventAndPage(c, &e, &pageDefault)
 	e.Active = true
 	err = models.DB.Create(&e)
 	if err != nil {
-		c.Set("e", e)
-		c.Set("errors", "Database save error")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		c.Set("e", e)
-		c.Set("errors", "Database reload error")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/new.html"))
 	}
-	c.Set("e", e)
-	c.Set("page", pageDefault)
-	c.LogField("new event id", e.ID)
+	races, err := decodeRacesFromPost(c)
+	for race := range races {
+		races[race].EventID = e.ID
+		// TODO handle race decode errors
+		// verrs, err := races[race].Validate()
+		// if err != nil {
+		// 	return errors.WithStack(err)
+		// }
+		// if verrs.HasAny() {
+		// 	c.Flash().Add("danger", verrs.String())
+		// 	return c.Render(422, r.HTML("events/new.html"))
+		// }
+		err = models.DB.Create(&races[race])
+		if err != nil {
+			c.Flash().Add("danger", err.Error())
+			return c.Render(422, r.HTML("events/new.html"))
+		}
+	}
 	c.Flash().Add("success", "Event created successfully")
 	return c.Redirect(301, "/events/%s", e.ID.String())
 }
@@ -107,11 +123,16 @@ func (v *EventsResource) Create(c buffalo.Context) error {
 func (v *EventsResource) Edit(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		// TODO handle error
-		return c.Render(500, r.String("Event id not found"))
+		c.Flash().Add("danger", err.Error())
+		return c.Render(404, r.HTML("events/index.html"))
 	}
-	c.Set("e", e)
-	c.Set("page", pageDefault)
+	races, err := models.FindRacesFromEvent(e)
+	if err != nil {
+		// TODO handle error gracefully
+		c.LogField("error", err.Error())
+		return c.Render(500, r.String(err.Error()))
+	}
+	setEventAndPage(c, &e, &pageDefault, &races)
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 
@@ -119,57 +140,67 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 func (v *EventsResource) Update(c buffalo.Context) error {
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		c.Set("e", e)
-		c.Set("errors", "Event not found in database")
+		c.Flash().Add("danger", "Find failed")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/index.html"))
 	}
-	// Alternate to bind due to time.Time parsing
-	// the usual would be to do `err = c.Bind(&e)`
-	err = c.Request().ParseForm()
-	if err != nil {
-		// TODO handle error
-		return errors.WithStack(err)
-	}
-	dec := schema.NewDecoder()
-	dec.IgnoreUnknownKeys(true)
-	dec.ZeroEmpty(true)
-	// this is the money call that gets us a time parser
-	dec.RegisterConverter(time.Time{}, ConvertFormDate)
-	// this is the equivalent to Bind(&e)
-	err = dec.Decode(&e, c.Request().PostForm)
-	// end alternate Bind
+	e, err = customEventDecode(c)
 	if c.Request().PostForm.Get("WebReg") == "" {
 		e.WebReg = false
 	}
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	c.LogField("event", e)
+	races, err := decodeRacesFromPost(c)
+	// races, err := models.FindRacesFromEvent(e)
 	if err != nil {
-		return errors.WithStack(err)
+		// TODO handle error gracefully
+		c.LogField("error", err.Error())
+		return c.Render(500, r.String(err.Error()))
 	}
-	verrs, err := e.Validate()
-	if err != nil {
-		return errors.WithStack(err)
+	for race := range races {
+		// races[race].EventID = e.ID
+		// TODO fix validations
+		// races[race].Validate()
+		// if verrs.HasAny() {
+		// 	c.Flash().Add("danger", verrs.String())
+		// 	c.LogField("validation error", verrs)
+		// 	return c.Render(422, r.HTML("events/edit.html"))
+		// }
+		// verrs, err := e.Validate()
+		// if err != nil {
+		// 	return errors.WithStack(err)
+		// }
+		c.LogField(fmt.Sprintf("race-%d", race), races[race].Description)
+		races[race].Validate()
+		err = models.DB.Update(&races[race])
+		if err != nil {
+			c.Flash().Add("danger", err.Error())
+			return c.Render(422, r.HTML("events/new.html"))
+		}
+		// err = models.DB.Reload(&races[race])
+		// if err != nil {
+		// 	c.Flash().Add("danger", "Reload failed")
+		// 	c.Flash().Add("danger", err.Error())
+		// 	return c.Render(500, r.HTML("events/edit.html"))
+		// }
 	}
-	if verrs.HasAny() {
-		c.Set("e", e)
-		c.Set("errors", verrs.Errors)
-		return c.Render(422, r.HTML("events/edit.html"))
-	}
+	e.Validate()
+	setEventAndPage(c, &e, &pageDefault, &races)
 	err = models.DB.Update(&e)
 	if err != nil {
-		// TODO should this be a 500 error ?
-		c.Set("e", e)
-		c.Set("errors", "Cannot reload event from database")
+		c.Flash().Add("danger", "Update failed")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(422, r.HTML("events/edit.html"))
 	}
 	err = models.DB.Reload(&e)
 	if err != nil {
-		// TODO should this be a 500 error ?
-		c.Set("e", e)
-		c.Set("errors", "Cannot reload event from database")
+		c.Flash().Add("danger", "Reload failed")
+		c.Flash().Add("danger", err.Error())
 		return c.Render(500, r.HTML("events/edit.html"))
 	}
-	c.Set("e", e)
-	c.Set("page", pageDefault)
+	c.Flash().Add("success", "Event updated successfully")
 	return c.Redirect(301, "/events/%s", e.ID)
 }
 
@@ -178,18 +209,19 @@ func (v *EventsResource) Destroy(c buffalo.Context) error {
 	// TODO admin middleware
 	e, err := findEventFromUUID(c)
 	if err != nil {
-		return c.Render(404, r.String("event cannot be found"))
+		c.Flash().Add("danger", err.Error())
+		return c.Render(404, r.HTML("events/index.html"))
 	}
 	e.Active = false
-	// don't actually delete in the DB, just mark inactive
+	// TODO don't actually delete in the DB, just mark inactive
 	// err = models.DB.Destroy(&models.Event{ID: e.ID})
 	err = models.DB.Update(&e)
 	if err != nil {
-		// TODO add flash
-		// return c.Render(422, r.HTML("events/edit.html"))
-		return c.Render(422, r.String("event cannot be updated in DB"))
+		c.Flash().Add("danger", err.Error())
+		return c.Render(500, r.HTML("events/index.html"))
 	}
 	c.Set("page", pageDefault)
+	c.Flash().Add("success", "Event deleted")
 	return c.Redirect(301, "/events")
 }
 
@@ -199,9 +231,12 @@ func findEventFromUUID(c buffalo.Context) (models.Event, error) {
 	return e, err
 }
 
-func setEventAndPage(c buffalo.Context, e *models.Event, p *PageDefaults) {
+func setEventAndPage(c buffalo.Context, e *models.Event, p *PageDefaults, r *models.Races) {
 	c.Set("e", e)
 	c.Set("page", p)
+	if len((*r)) > 0 {
+		c.Set("races", r)
+	}
 }
 
 func customEventDecode(c buffalo.Context) (models.Event, error) {
@@ -227,6 +262,38 @@ func customEventDecode(c buffalo.Context) (models.Event, error) {
 		e.WebReg = false
 	}
 	c.LogField("event", e)
-	// end alternate Bind
 	return e, nil
+}
+
+func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
+	var races models.Races
+	for x := 0; true; x++ {
+		r := models.Race{}
+		// comes across as 'Race.0.Cost'
+		// TODO refactor this to some kind of custom bind
+		k := map[string]string{
+			"ID":          fmt.Sprintf("Race.%d.ID", x),
+			"EventID":     fmt.Sprintf("Race.%d.EventID", x),
+			"Cost":        fmt.Sprintf("Race.%d.Cost", x),
+			"Description": fmt.Sprintf("Race.%d.Description", x),
+			"URL":         fmt.Sprintf("Race.%d.URL", x),
+			"License":     fmt.Sprintf("Race.%d.License", x),
+		}
+		// TODO more graceful formatID handling
+		r.ID, _ = uuid.FromString(c.Request().PostFormValue(k["ID"]))
+		r.EventID, _ = uuid.FromString(c.Request().PostFormValue(k["EventID"]))
+		r.FormatID, _ = strconv.Atoi(c.Request().PostFormValue(k["FormatID"]))
+		r.Cost = c.Request().PostFormValue(k["Cost"])
+		r.Description = c.Request().PostFormValue(k["Description"])
+		r.URL = c.Request().PostFormValue(k["URL"])
+		r.License = c.Request().PostFormValue(k["License"])
+		// TODO this is bad -- check all variables ?
+		if r.License == "" {
+			break
+		}
+		// c.LogField(fmt.Sprintf("bare-%d", x), r.Description)
+		races = append(races, r)
+	}
+	c.LogField("races", races)
+	return races, nil
 }
