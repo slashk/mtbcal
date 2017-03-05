@@ -117,8 +117,9 @@ type RaceFormat struct {
 
 // FormatbyID is a map of int to Format
 var FormatbyID = map[int]RaceFormat{
-	1:  RaceFormat{ID: 1, UCI: "XC", US: "MXC", Name: "Cross Country", Description: ""},
-	2:  RaceFormat{ID: 2, UCI: "DHI", US: "MDH", Name: "Downhill", Description: ""},
+	0:  RaceFormat{ID: 0, Name: "Fat Tire", UCI: "FT", US: "FAT", Description: ""},
+	1:  RaceFormat{ID: 1, Name: "Cross Country", UCI: "XC", US: "MXC", Description: ""},
+	2:  RaceFormat{ID: 2, Name: "Downhill", UCI: "DHI", US: "MDH", Description: ""},
 	3:  RaceFormat{ID: 3, Name: "Super D", UCI: "SD", US: "SD", Description: ""},
 	4:  RaceFormat{ID: 4, Name: "MountainCross / 4X", UCI: "MTX", US: "4X", Description: ""},
 	5:  RaceFormat{ID: 5, Name: "Dual Slalom", UCI: "DSL", US: "DS", Description: ""},

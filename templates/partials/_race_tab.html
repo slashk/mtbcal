@@ -13,7 +13,7 @@
       <div role="tabpanel" class="tab-pane {{#if @first}}active{{/if}}" id="{{r.ID}}">
         <p><i class="fa fa-money fa-lg" aria-hidden="true"></i> {{r.Cost}}</p>
         <p><i class="fa fa-drivers-license fa-lg" aria-hidden="true"></i> {{r.License}}</p>
-        <p><i class="fa fa-money fa-lg" aria-hidden="true"></i><a href="{{r.URL}}"> {{r.URL}}</a></p>
+        <p><i class="fa fa-globe fa-lg" aria-hidden="true"></i><a href="{{r.URL}}"> {{r.URL}}</a></p>
         <p>{{markdown r.Description}}</p>
       </div>
     {{/each}}

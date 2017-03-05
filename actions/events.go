@@ -69,6 +69,8 @@ func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
 	rs := models.NewEmptyRace()
 	setEventAndPage(c, &e, &pageDefault, &rs)
+	f := raceFormatSelect()
+	c.Set("f", f)
 	return c.Render(200, r.HTML("events/new.html"))
 }
 
@@ -133,6 +135,7 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 		return c.Render(500, r.String(err.Error()))
 	}
 	setEventAndPage(c, &e, &pageDefault, &races)
+	c.Set("f", models.FormatbyID)
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 
@@ -278,8 +281,8 @@ func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
 			"Description": fmt.Sprintf("Race.%d.Description", x),
 			"URL":         fmt.Sprintf("Race.%d.URL", x),
 			"License":     fmt.Sprintf("Race.%d.License", x),
+			"FormatID": fmt.Sprintf("Race.%d.FormatID", x),
 		}
-		// TODO more graceful formatID handling
 		r.ID, _ = uuid.FromString(c.Request().PostFormValue(k["ID"]))
 		r.EventID, _ = uuid.FromString(c.Request().PostFormValue(k["EventID"]))
 		r.FormatID, _ = strconv.Atoi(c.Request().PostFormValue(k["FormatID"]))
@@ -296,4 +299,12 @@ func decodeRacesFromPost(c buffalo.Context) (models.Races, error) {
 	}
 	c.LogField("races", races)
 	return races, nil
+}
+
+func raceFormatSelect() []models.RaceFormat {
+	a := []models.RaceFormat{}
+	for k := range models.FormatbyID {
+		a = append(a, models.FormatbyID[k])
+	}
+	return a
 }
