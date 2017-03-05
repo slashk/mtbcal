@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,10 +24,11 @@ func init() {
 			}
 		},
 		Helpers: map[string]interface{}{
-			"formatDate":   formatDate,
+			"formatDate":   FormatDate,
 			"formatLatLng": formatLatLng,
 			"formatBool":   formatBool,
 			"raceName":     formatRaceName,
+			"dateRange":    DateRange,
 		},
 	})
 }
@@ -40,8 +42,8 @@ func formatRaceName(i int) string {
 	return models.FormatbyID[i].Name
 }
 
-// formatDate mimics the format_date rails helper
-func formatDate(t time.Time, f string) string {
+// FormatDate mimics the format_date rails helper
+func FormatDate(t time.Time, f string) string {
 	// time = Time.now                    # => Thu Jan 18 06:10:17 CST 2007
 	// time.to_formatted_s(:time)         # => "06:10"
 	// time.to_s(:time)                   # => "06:10"
@@ -93,4 +95,13 @@ func formatBool(b bool) string {
 		return "true"
 	}
 	return "false"
+}
+
+// DateRange formats a range of dates for humans
+func DateRange(start time.Time, end time.Time) string {
+	f := "common"
+	if start == end {
+		return FormatDate(start, f)
+	}
+	return fmt.Sprintf("%s - %s", FormatDate(start, f), FormatDate(end, f))
 }
