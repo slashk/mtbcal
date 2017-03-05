@@ -69,7 +69,7 @@ func (v *EventsResource) New(c buffalo.Context) error {
 	e := models.NewEmptyEvent()
 	rs := models.NewEmptyRace()
 	setEventAndPage(c, &e, &pageDefault, &rs)
-	f := raceFormatSelect()
+	f := models.FormatNameByID()
 	c.Set("f", f)
 	return c.Render(200, r.HTML("events/new.html"))
 }
@@ -135,7 +135,8 @@ func (v *EventsResource) Edit(c buffalo.Context) error {
 		return c.Render(500, r.String(err.Error()))
 	}
 	setEventAndPage(c, &e, &pageDefault, &races)
-	c.Set("f", models.FormatbyID)
+	f := models.FormatNameByID()
+	c.Set("f", f)
 	return c.Render(200, r.HTML("events/edit.html"))
 }
 

@@ -142,3 +142,12 @@ var FormatbyID = map[int]RaceFormat{
 	23: RaceFormat{ID: 23, Name: "Other", UCI: "OTH", US: "OT", Description: ""},
 	24: RaceFormat{ID: 24, Name: "MTB Triathlon", UCI: "MTRI", US: "MT", Description: ""},
 }
+
+// FormatNameByID is a helper function to return a map of RaceFormatIDs to their name
+func FormatNameByID() map[int]string {
+	r := map[int]string{}
+	for x := range FormatbyID {
+		r[x] = FormatbyID[x].Name
+	}
+	return r
+}
