@@ -8,6 +8,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/buffalo/render/resolvers"
+	"github.com/slashk/mtbcal/models"
 )
 
 var r *render.Engine
@@ -25,6 +26,7 @@ func init() {
 			"formatDate":   formatDate,
 			"formatLatLng": formatLatLng,
 			"formatBool":   formatBool,
+			"raceName":     formatRaceName,
 		},
 	})
 }
@@ -32,6 +34,10 @@ func init() {
 func assetsPath() http.FileSystem {
 	box := rice.MustFindBox("../public/assets")
 	return box.HTTPBox()
+}
+
+func formatRaceName(i int) string {
+	return models.FormatbyID[i].Name
 }
 
 // formatDate mimics the format_date rails helper
