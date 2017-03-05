@@ -1,9 +1,8 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
-	"os"
-
 	"github.com/gobuffalo/buffalo"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -12,6 +11,8 @@ import (
 	"github.com/markbates/goth/providers/instagram"
 	"github.com/markbates/goth/providers/twitter"
 	"github.com/slashk/mtbcal/models"
+	"net/http"
+	"os"
 )
 
 func init() {
@@ -32,6 +33,7 @@ func init() {
 
 // AuthCallback provides provider callback handler for identity providers
 func AuthCallback(c buffalo.Context) error {
+	c.LogField("response", c.Response().Header())
 	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
 	if err != nil {
 		return c.Error(401, err)
@@ -40,49 +42,110 @@ func AuthCallback(c buffalo.Context) error {
 	// TODO find user and create session
 	// TODO if not found, register the user and create session
 
-	c.LogField("User response", user)
+	c.LogField("User", user)
 
 	// register
 	u := models.User{
-		Login:    user.Name,
-		Hometown: user.Location,
-		Avatar:   user.AvatarURL,
-		Email:    user.Email,
-		// Provider:      user.Provider,
+		Login:         user.Name,
+		Hometown:      user.Location,
+		Email:         user.Email,
+		Avatar:        user.AvatarURL,
+		Provider:      user.Provider,
 		ProviderID:    user.UserID,
 		Active:        true,
 		Admin:         false,
 		PublicProfile: false,
 	}
-	// TODO register in DB only if not registered ?
+
+	// TODO lookup user via provider and providerID
+	// TODO register in DB only if not found
 	// err = models.DB.Save(&u)
 	// if err != nil {
 	// 	return c.Error(500, err)
 	// }
 	c.Set("user", u)
 
-	// // if OK, set username in session
-	// c.Session().Set("username", c.Request().FormValue("username"))
-	// c.Session().Save()
+	c.Session().Set("username", u.Login)
+	c.Session().Set("AccessToken", user.AccessToken)
+	c.Session().Set("AccessTokenSecret", user.AccessTokenSecret)
+	c.Session().Set("RefreshToken", user.RefreshToken)
+	c.Session().Set("Provider", user.Provider)
+	c.Session().Save()
 
-	// c.Session().Set("AccessToken", user.AccessToken)
-	// c.Session().Set("AccessTokenSecret", user.AccessTokenSecret)
-	// c.Session().Set("RefreshToken", user.RefreshToken)
-	// c.Session().Save()
+	c.Set("username", u.Login)
 
 	return c.Render(200, r.HTML("users/show.html"))
 }
 
-func authMiddleware() buffalo.MiddlewareFunc {
-	return func(h buffalo.Handler) buffalo.Handler {
-		return func(c buffalo.Context) error {
-			name := c.Session().Get("username")
-			fmt.Println("Name", name)
-			if name == "" || name == nil {
-				return c.Redirect(302, "/login")
-			}
-			c.LogField("User", name)
-			return h(c)
-		}
+// LoginHandler renders the login form for /login
+func LoginHandler(c buffalo.Context) error {
+	c.Set("page", pageDefault)
+	return c.Render(200, r.HTML("login.html"))
+}
+
+// LogoutHandler logs the user out
+func LogoutHandler(c buffalo.Context) error {
+	// gothic.GetProviderName = retrieveMTBcalProviderName
+	// err := gothic.Logout(c.Response(), c.Request())
+	err := deleteGothSession(c)
+	if err != nil {
+		c.LogField("logout_failure", err)
 	}
+	c.Session().Clear()
+	c.Session().Session.Options.MaxAge = -1
+	c.Session().Save()
+	// NOTE do not redirect 301 here ... cached by browser
+	return c.Render(200, r.HTML("login.html"))
+}
+
+// AuthMiddleware grabs current session
+//
+// Shamelessly stolen from https://godoc.org/github.com/gobuffalo/buffalo#MiddlewareStack.Skip
+func AuthMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		loggedin := false
+		admin := false
+		name := c.Session().Get("username")
+		if name != nil {
+			loggedin = true
+		}
+		c.LogField("session_user", name)
+		if loggedin && isAdmin(name.(string)) {
+			admin = true
+		}
+		c.Set("loggedin", loggedin)
+		c.Set("admin", admin)
+		err := next(c)
+		return err
+	}
+}
+
+func isAdmin(u string) bool {
+	// TODO lookup user in DB or stuff in session
+	if u == "Ken Pepple" {
+		return true
+	}
+	return false
+}
+
+func retrieveMTBcalProviderName(req *http.Request) (string, error) {
+	return "twitter", nil
+}
+
+func deleteGothSession(c buffalo.Context) error {
+	p := c.Session().Get("Provider")
+	if p == nil {
+		return errors.New("Could not delete user session ")
+	}
+	session, err := gothic.Store.Get(c.Request(), p.(string)+gothic.SessionName)
+	if err != nil {
+		return errors.New("Could not delete user session ")
+	}
+	session.Options.MaxAge = -1
+	session.Values = make(map[interface{}]interface{})
+	err = session.Save(c.Request(), c.Response())
+	if err != nil {
+		return errors.New("Could not delete user session ")
+	}
+	return nil
 }

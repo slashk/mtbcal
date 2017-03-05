@@ -23,7 +23,12 @@ func App() *buffalo.App {
 		})
 
 		app.Use(middleware.PopTransaction(models.DB))
+		app.Use(AuthMiddleware)
+		// skip the AuthorizeUser middleware for the login and Logout handlers
+		// app.Middleware.Skip(AuthMiddleware, LogoutHandler, LoginHandler)
 
+		app.GET("/login", LoginHandler)
+		app.GET("/logout", LogoutHandler)
 		app.GET("/", HomeHandler)
 
 		app.ServeFiles("/assets", assetsPath())
