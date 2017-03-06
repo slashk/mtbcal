@@ -5,52 +5,23 @@
 
 ## Documentation
 
-To view generated docs for mtbcal, run the below command and point your brower to http://127.0.0.1:6060/pkg/
+To view generated docs for mtbcal, run the below command and point your browser to http://127.0.0.1:6060/pkg/
 
     godoc -http=:6060 2>/dev/null &
 
-### Buffalo
+## Install
 
-http://gobuffalo.io/docs/getting-started
+```bash
+$ buffalo db migrate up
+$ buffalo build -z
+$ ./bin/mtbcal
+```
 
-### Pop/Soda
+## Run Tests
 
-http://gobuffalo.io/docs/db
+   buffalo test
 
-## Database Configuration
-
- 	development:
- 		dialect: postgres
- 		database: mtbcal_development
- 		user: <username>
- 		password: <password>
- 		host: 127.0.0.1
- 		pool: 5
-
- 	test:
- 		dialect: postgres
- 		database: mtbcal_test
- 		user: <username>
- 		password: <password>
- 		host: 127.0.0.1
-
- 	production:
- 		dialect: postgres
- 		database: mtbcal_production
- 		user: <username>
- 		password: <password>
- 		host: 127.0.0.1
- 		pool: 25
-
- ### Running Migrations
-
-    buffalo soda migrate
-
- ## Run Tests
-
-    buffalo test
-
- ## Run in dev
+## Run in dev
 
     buffalo dev
 
