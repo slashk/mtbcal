@@ -1,0 +1,20 @@
+version: '2.1'
+services:
+  buffalo:
+    build: .
+    image: mtbcal:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+    links:
+      - db
+    env_file:
+      - ./stage.env
+  db:
+    image: healthcheck/postgres:latest
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432

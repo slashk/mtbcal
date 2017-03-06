@@ -7,3 +7,4 @@ node_modules/
 rice-box.go
 public/assets/
 mtbcal
+stage.env
