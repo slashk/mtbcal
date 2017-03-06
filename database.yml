@@ -12,10 +12,17 @@ test:
   user: "postgres"
   password: "postgres"
 
+docker:
+  dialect: "postgres"
+  database: "mtbcal_test"
+  host: "db"
+  user: "postgres"
+  password: "postgres"
+
 production:
   dialect: postgres
   database: mtbcal_production
-  user: mtbcal
-  password: {{ env "POSTGRES_PASSWORD" }}
-  host: 127.0.0.1
+  user: postgres
+  password: postgres
+  host: db
   pool: 25
